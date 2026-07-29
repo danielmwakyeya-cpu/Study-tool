@@ -1,0 +1,2592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Toolkit — Counselling</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+  :root{
+    --bg: #F3EEE1;
+    --paper: #FFFDF7;
+    --ink: #2E2A22;
+    --ink-soft: #6B6252;
+    --sage: #7C8B6F;
+    --sage-dark: #4F5C44;
+    --sage-tint: #EEF1E9;
+    --terracotta: #B5592E;
+    --terracotta-soft: #E4B9A4;
+    --ochre: #C99A3D;
+    --ochre-tint: #FBF3DD;
+    --border: #DED2B8;
+    --danger: #A5432A;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family: "Iowan Old Style","Palatino Linotype", Georgia, "Times New Roman", serif;
+    background:var(--bg);
+    color:var(--ink);
+    display:flex;
+    height:100vh;
+    overflow:hidden;
+  }
+  ::selection{ background: var(--ochre); color:#fff; }
+  button{ font-family: inherit; }
+
+  /* ---------- SHELF (sidebar) ---------- */
+  .shelf{
+    width:310px;
+    min-width:310px;
+    background: linear-gradient(180deg, #EFE7D4, #E9DFC7);
+    border-right: 2px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    height:100%;
+  }
+  .shelf-head{ padding:18px 16px 10px; border-bottom:1px solid var(--border); }
+  .shelf-head h1{ font-size:19px; margin:0 0 3px; color:var(--sage-dark); }
+  .shelf-head .sub{ font-family: system-ui, sans-serif; font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:1.2px; }
+
+  .mode-tabs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+    padding:10px 14px;
+    border-bottom:1px solid var(--border);
+  }
+  .mode-tabs button{
+    flex:1;
+    padding:7px 2px;
+    font-family: system-ui, sans-serif;
+    font-size:11px;
+    border-radius:6px;
+    border:1px solid var(--border);
+    background:var(--paper);
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .mode-tabs button.active{ background:var(--sage-dark); color:#fff; border-color:var(--sage-dark); }
+
+  .search-row{ padding:10px 14px; border-bottom:1px solid var(--border); }
+  .search-row input{
+    width:100%; padding:7px 10px; border-radius:6px; border:1px solid var(--border);
+    background:var(--paper); font-family: system-ui, sans-serif; font-size:13px; color:var(--ink);
+  }
+  .search-results{ max-height:170px; overflow-y:auto; padding:0 10px; border-bottom:1px solid var(--border); }
+  .search-results .hit{ font-family: system-ui, sans-serif; font-size:12px; padding:6px 8px; border-radius:5px; cursor:pointer; color:var(--ink-soft); }
+  .search-results .hit:hover{ background:var(--paper); color:var(--ink); }
+  .search-results .hit b{ color:var(--terracotta); }
+  .search-results .hit .path{ display:block; font-size:10px; color:#9c927c; margin-top:1px; }
+
+  .add-top-btn{
+    margin:10px 14px; padding:8px 10px; background:var(--sage-dark); color:#fff; border:none;
+    border-radius:6px; font-family: system-ui, sans-serif; font-size:12.5px; letter-spacing:.3px; cursor:pointer;
+  }
+  .add-top-btn:hover{ background:var(--sage); }
+
+  .tree{ flex:1; overflow-y:auto; padding:4px 10px 14px; }
+
+  /* unit / book row */
+  .item-row{
+    margin-bottom:6px; border-radius:6px; overflow:hidden;
+  }
+  .item-spine{
+    display:flex; align-items:center; gap:9px; padding:9px 10px; cursor:pointer;
+    border-left:6px solid var(--spine-color, var(--terracotta)); background:var(--paper); border-radius:4px;
+  }
+  .item-spine:hover{ filter:brightness(0.97); }
+  .item-spine .titles{ flex:1; min-width:0; }
+  .item-spine .t1{ font-size:13.5px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .item-spine .t2{ font-family: system-ui, sans-serif; font-size:10.5px; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .item-spine .caret{ font-size:10px; color:var(--ink-soft); transition:transform .15s; }
+  .item-row.open .item-spine .caret{ transform:rotate(90deg); }
+  .item-menu-btn{ font-family: system-ui, sans-serif; font-size:15px; color:var(--ink-soft); background:none; border:none; cursor:pointer; padding:0 2px; }
+  .item-menu-btn:hover{ color:var(--danger); }
+
+  .item-body{ display:none; padding:6px 4px 8px 16px; }
+  .item-row.open .item-body{ display:block; }
+
+  .progress-track{ height:4px; background:var(--border); border-radius:2px; margin-top:5px; overflow:hidden; }
+  .progress-fill{ height:100%; background:var(--sage); border-radius:2px; }
+  .this-week-badge{
+    display:inline-block; font-family: system-ui, sans-serif; font-size:9.5px; font-weight:700; letter-spacing:.4px;
+    color:#fff; background:var(--terracotta); border-radius:9px; padding:1px 7px; margin-left:6px; text-transform:uppercase;
+    vertical-align:middle;
+  }
+  .assessment-chip{
+    display:inline-block; font-family: system-ui, sans-serif; font-size:10px; color:var(--sage-dark);
+    background:var(--sage-tint); border-radius:9px; padding:1px 8px; margin-left:6px;
+  }
+  .highlight-card{
+    background:var(--paper); border-radius:8px; padding:14px 18px; box-shadow:0 1px 3px rgba(0,0,0,0.06);
+  }
+  .highlight-card .h-path{ font-family: system-ui, sans-serif; font-size:11px; color:var(--ink-soft); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; }
+  .highlight-card .h-quote{ background:#F5D98B; padding:2px 4px; border-radius:3px; }
+  .highlight-card .h-jump{
+    font-family: system-ui, sans-serif; font-size:11px; color:var(--sage-dark); background:none; border:none; cursor:pointer;
+  }
+  .highlight-card .h-jump:hover{ text-decoration:underline; }
+  .reading-link-select{
+    font-family: system-ui, sans-serif; font-size:11px; border:1px solid var(--border); border-radius:5px;
+    padding:5px 6px; background:#fff; color:var(--ink-soft); max-width:130px;
+  }
+  .reading-open-btn{
+    font-family: system-ui, sans-serif; font-size:11px; color:var(--sage-dark); background:none; border:none; cursor:pointer; white-space:nowrap;
+  }
+  .reading-open-btn:hover{ text-decoration:underline; }
+
+  /* ---------- Q&A ---------- */
+  .qa-item{ background:#fff; border:1px solid var(--border); border-radius:6px; padding:10px 12px; margin-bottom:8px; }
+  .qa-item .qa-q{
+    width:100%; border:none; background:none; font-family: system-ui, sans-serif; font-size:13px; font-weight:600;
+    color:var(--ink); outline:none; margin-bottom:6px;
+  }
+  .qa-item .qa-q::placeholder{ color:#c7bda4; font-weight:400; }
+  .qa-item .qa-a{
+    width:100%; border:none; background:none; font-family: system-ui, sans-serif; font-size:12.5px; color:var(--ink-soft);
+    outline:none; resize:vertical; min-height:40px;
+  }
+  .qa-item .qa-a::placeholder{ color:#c7bda4; }
+  .qa-item .qa-a.hidden-answer{ display:none; }
+  .qa-item-actions{ display:flex; justify-content:space-between; align-items:center; margin-top:6px; }
+  .qa-reveal-btn{
+    font-family: system-ui, sans-serif; font-size:11px; color:var(--sage-dark); background:var(--sage-tint);
+    border:none; border-radius:5px; padding:4px 10px; cursor:pointer;
+  }
+  .qa-remove-btn{ background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:13px; }
+  .qa-remove-btn:hover{ color:var(--danger); }
+  .add-qa-btn{
+    font-family: system-ui, sans-serif; font-size:12px; color:var(--sage-dark); background:none; border:none;
+    cursor:pointer; padding:4px 0;
+  }
+  .add-qa-btn:hover{ text-decoration:underline; }
+
+  /* week groups (planner) */
+  .week-group{ margin:4px 0 8px; }
+  .week-label{
+    font-family: system-ui, sans-serif; font-size:10.5px; font-weight:700; letter-spacing:.6px;
+    color:var(--sage-dark); text-transform:uppercase; padding:4px 6px;
+  }
+  .day-item{
+    display:flex; align-items:center; gap:6px; padding:6px 8px; border-radius:5px; cursor:pointer;
+    font-family: system-ui, sans-serif; font-size:12.5px; color:var(--ink-soft);
+  }
+  .day-item:hover{ background:#fff; }
+  .day-item.active{ background:var(--sage); color:#fff; }
+  .day-item .d-title{ flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .day-item .done-dot{ width:7px; height:7px; border-radius:50%; background:var(--ochre); flex-shrink:0; }
+  .day-item.active .done-dot{ background:#fff; }
+  .add-day-btn, .add-chapter-btn{
+    font-family: system-ui, sans-serif; font-size:11.5px; color:var(--sage-dark); background:none;
+    border:none; cursor:pointer; padding:5px 8px; text-align:left;
+  }
+  .add-day-btn:hover, .add-chapter-btn:hover{ text-decoration:underline; }
+
+  .shelf-foot{ padding:10px 14px; border-top:1px solid var(--border); display:flex; gap:8px; }
+  .shelf-foot button{
+    flex:1; padding:7px 4px; font-family: system-ui, sans-serif; font-size:11px; border-radius:6px;
+    border:1px solid var(--border); background:var(--paper); color:var(--ink-soft); cursor:pointer;
+  }
+  .shelf-foot button:hover{ border-color:var(--sage); color:var(--sage-dark); }
+
+  /* ---------- MAIN PAGE ---------- */
+  .page{ flex:1; display:flex; flex-direction:column; height:100%; overflow:hidden; }
+  .toolbar{ padding:14px 30px 10px; border-bottom:1px solid var(--border); background:var(--bg); }
+  .breadcrumb{ font-family: system-ui, sans-serif; font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.6px; margin-bottom:4px; }
+  .title-row{ display:flex; align-items:baseline; gap:14px; margin-bottom:8px; }
+  .main-title-input{
+    flex:1; font-family: "Iowan Old Style", Georgia, serif; font-size:23px; font-weight:600; border:none;
+    background:none; color:var(--ink); outline:none;
+  }
+  .main-title-input::placeholder{ color:#c7bda4; }
+  .save-status{ font-family: system-ui, sans-serif; font-size:11px; color:var(--ink-soft); white-space:nowrap; }
+  .meta-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+  .tags-input, .meta-input{
+    font-family: system-ui, sans-serif; font-size:12px; border:1px solid var(--border); border-radius:5px;
+    padding:5px 9px; background:var(--paper); color:var(--ink-soft); outline:none;
+  }
+  .tags-input{ flex:1; }
+  .word-count{ font-family: system-ui, sans-serif; font-size:11px; color:var(--ink-soft); white-space:nowrap; }
+  .done-toggle{
+    font-family: system-ui, sans-serif; font-size:11.5px; padding:5px 10px; border-radius:14px;
+    border:1px solid var(--border); background:var(--paper); color:var(--ink-soft); cursor:pointer;
+  }
+  .done-toggle.on{ background:var(--ochre); color:#fff; border-color:var(--ochre); }
+
+  .fmt-toolbar{ display:flex; gap:4px; flex-wrap:wrap; }
+  .fmt-toolbar button{
+    font-family: Georgia, serif; font-size:13px; width:30px; height:28px; border-radius:5px;
+    border:1px solid var(--border); background:var(--paper); color:var(--ink); cursor:pointer;
+  }
+  .fmt-toolbar button:hover{ border-color:var(--sage); }
+  .fmt-toolbar button.wide{ width:auto; padding:0 10px; font-family: system-ui, sans-serif; font-size:11px; }
+  .fmt-toolbar button.danger{ color:var(--danger); }
+  .fmt-divider{ width:1px; background:var(--border); margin:2px 4px; }
+
+  .page-scroll{ flex:1; overflow-y:auto; padding:26px 0 60px; display:flex; justify-content:center; }
+  .sheet-col{ width:min(980px, 94%); display:flex; flex-direction:column; gap:18px; }
+
+  .split-row{ display:flex; gap:18px; align-items:stretch; }
+  .split-col{ flex:1; min-width:0; display:flex; flex-direction:column; }
+  .rich-editable.scrollable{ max-height:400px; overflow-y:auto; padding-right:4px; }
+
+  .card{
+    background:var(--paper); border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.06), 0 6px 18px rgba(0,0,0,0.04);
+    padding:20px 26px;
+  }
+  .card h3{
+    font-family: system-ui, sans-serif; font-size:11px; text-transform:uppercase; letter-spacing:.8px;
+    color:var(--sage-dark); margin:0 0 12px; display:flex; align-items:center; justify-content:space-between;
+  }
+
+  /* readings list */
+  .reading-row{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+  .reading-row input[type=text]{
+    flex:1; padding:6px 9px; border:1px solid var(--border); border-radius:5px; font-family: system-ui, sans-serif;
+    font-size:13px; background:#fff; color:var(--ink);
+  }
+  .reading-row input[type=checkbox]{ width:16px; height:16px; accent-color: var(--sage-dark); flex-shrink:0; }
+  .reading-row .remove-reading{ background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:14px; padding:2px 4px; }
+  .reading-row .remove-reading:hover{ color:var(--danger); }
+  .add-reading-btn{
+    font-family: system-ui, sans-serif; font-size:12px; color:var(--sage-dark); background:none; border:none;
+    cursor:pointer; padding:4px 0;
+  }
+  .add-reading-btn:hover{ text-decoration:underline; }
+
+  .objective-row{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+  .objective-row .obj-bullet{ color:var(--sage-dark); font-size:14px; flex-shrink:0; }
+  .objective-row input[type=text]{
+    flex:1; padding:6px 9px; border:1px solid var(--border); border-radius:5px; font-family: system-ui, sans-serif;
+    font-size:13px; background:#fff; color:var(--ink);
+  }
+  .objective-row .remove-objective{ background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:14px; padding:2px 4px; }
+  .objective-row .remove-objective:hover{ color:var(--danger); }
+  .add-objective-btn{
+    font-family: system-ui, sans-serif; font-size:12px; color:var(--sage-dark); background:none; border:none;
+    cursor:pointer; padding:4px 0;
+  }
+  .add-objective-btn:hover{ text-decoration:underline; }
+  .obj-color-dot{
+    width:10px; height:10px; border-radius:50%; flex-shrink:0; border:1px solid rgba(0,0,0,0.15);
+  }
+  .objective-tag-chips{
+    display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed var(--border);
+  }
+  .objective-tag-chips .obj-tag-hint{
+    font-family: system-ui, sans-serif; font-size:10.5px; color:var(--ink-soft); width:100%; margin-bottom:2px;
+  }
+  .obj-tag-chip{
+    font-family: system-ui, sans-serif; font-size:11px; border:none; border-radius:12px; padding:4px 10px;
+    cursor:pointer; color:#3a3427; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .obj-tag-chip:hover{ filter:brightness(0.93); }
+
+  .rich-editable{
+    font-size:15px; line-height:1.7; color:var(--ink); outline:none; min-height:120px;
+  }
+  .rich-editable h2{ font-size:18px; color:var(--sage-dark); margin:16px 0 6px; }
+  .rich-editable blockquote{ margin:8px 0; padding:6px 14px; border-left:3px solid var(--ochre); color:var(--ink-soft); background:var(--ochre-tint); font-style:italic; }
+  .rich-editable ul, .rich-editable ol{ padding-left:20px; }
+  .rich-editable:empty::before{ content: attr(data-placeholder); color:#c7bda4; }
+  .rich-editable img{ max-width:100%; height:auto; border-radius:6px; margin:8px 0; display:block; box-shadow:0 1px 4px rgba(0,0,0,0.15); }
+
+  .card.reflection{ background:var(--sage-tint); }
+  .card.reflection h3{ color:var(--sage-dark); }
+  .card.source{ background:var(--ochre-tint); }
+  .card.source h3{ color:#8a6a1f; }
+  .card.source .rich-editable{ font-size:14.5px; }
+  .page-range-input{
+    font-family: system-ui, sans-serif; font-size:11px; border:1px solid var(--border); border-radius:5px;
+    padding:3px 7px; background:#fff; color:var(--ink-soft); outline:none; width:110px;
+  }
+
+  .empty-state{
+    margin:auto; text-align:center; color:var(--ink-soft); font-family: system-ui, sans-serif; max-width:380px;
+  }
+  .empty-state h2{ font-family: Georgia, serif; color:var(--sage-dark); font-size:20px; margin-bottom:8px; }
+  .empty-state p{ font-size:13px; line-height:1.6; }
+
+  /* ---------- MODAL ---------- */
+  .modal-backdrop{ position:fixed; inset:0; background:rgba(46,42,34,0.45); display:none; align-items:center; justify-content:center; z-index:50; }
+  .modal-backdrop.show{ display:flex; }
+  .modal{ background:var(--paper); border-radius:8px; padding:22px 24px; width:340px; box-shadow:0 12px 40px rgba(0,0,0,0.25); font-family: system-ui, sans-serif; }
+  .modal h3{ margin:0 0 12px; font-family: Georgia, serif; color:var(--sage-dark); font-size:17px; }
+  .modal label{ display:block; font-size:11px; color:var(--ink-soft); margin:10px 0 4px; text-transform:uppercase; letter-spacing:.5px; }
+  .modal input, .modal select{ width:100%; padding:7px 9px; border-radius:5px; border:1px solid var(--border); font-size:13px; font-family: system-ui, sans-serif; background:#fff; }
+  .modal-actions{ margin-top:18px; display:flex; gap:8px; justify-content:flex-end; }
+  .modal-actions button{ padding:7px 14px; border-radius:6px; border:1px solid var(--border); background:#fff; font-size:12.5px; cursor:pointer; }
+  .modal-actions button.primary{ background:var(--sage-dark); color:#fff; border-color:var(--sage-dark); }
+  .swatches{ display:flex; gap:8px; margin-top:4px; }
+  .swatch{ width:24px; height:24px; border-radius:50%; cursor:pointer; border:2px solid transparent; }
+  .swatch.selected{ border-color:var(--ink); }
+  .quick-days{ display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+  .quick-days button{ font-size:11px; padding:5px 8px; border-radius:5px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+  .quick-days button:hover{ border-color:var(--sage); }
+
+  #import-file{ display:none; }
+
+  /* ---------- QUICK CAPTURE (sidebar) ---------- */
+  .quick-capture{ padding:10px 14px; border-top:1px solid var(--border); }
+  .quick-capture textarea{
+    width:100%; resize:vertical; min-height:44px; padding:6px 8px; border-radius:6px; border:1px solid var(--border);
+    font-family: system-ui, sans-serif; font-size:12px; background:var(--paper); color:var(--ink);
+  }
+  .quick-capture button{
+    margin-top:5px; width:100%; padding:6px; font-family: system-ui, sans-serif; font-size:11px; border-radius:6px;
+    border:1px solid var(--border); background:var(--sage-dark); color:#fff; cursor:pointer;
+  }
+
+  /* ---------- DASHBOARD ---------- */
+  .dash-card{
+    background:var(--paper); border-radius:8px; padding:18px 22px; box-shadow:0 1px 3px rgba(0,0,0,0.06), 0 6px 18px rgba(0,0,0,0.04);
+    border-left:6px solid var(--spine-color, var(--terracotta));
+  }
+  .dash-card h3{ font-family: Georgia, serif; font-size:17px; color:var(--ink); margin:0 0 4px; }
+  .dash-card .dash-sub{ font-family: system-ui, sans-serif; font-size:11.5px; color:var(--ink-soft); margin-bottom:10px; }
+  .dash-card .progress-track{ margin:0 0 12px; }
+  .dash-card .dash-next{
+    font-family: system-ui, sans-serif; font-size:13px; background:var(--sage-tint); color:var(--sage-dark);
+    padding:8px 12px; border-radius:6px; cursor:pointer; margin-bottom:10px;
+  }
+  .dash-card .dash-next:hover{ filter:brightness(0.97); }
+  .dash-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .dash-actions button{
+    font-family: system-ui, sans-serif; font-size:11.5px; padding:6px 12px; border-radius:6px;
+    border:1px solid var(--border); background:#fff; color:var(--ink-soft); cursor:pointer;
+  }
+  .dash-actions button:hover{ border-color:var(--sage); color:var(--sage-dark); }
+  .quick-capture-item{
+    background:var(--paper); border-radius:6px; padding:10px 14px; margin-bottom:8px; font-family: system-ui, sans-serif; font-size:12.5px;
+    display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+  }
+  .quick-capture-item .qc-remove{ background:none; border:none; color:var(--ink-soft); cursor:pointer; flex-shrink:0; }
+  .quick-capture-item .qc-remove:hover{ color:var(--danger); }
+
+  .flag-toggle{
+    font-family: system-ui, sans-serif; font-size:11.5px; padding:5px 10px; border-radius:14px;
+    border:1px solid var(--border); background:var(--paper); color:var(--ink-soft); cursor:pointer;
+  }
+  .flag-toggle.on{ background:var(--terracotta); color:#fff; border-color:var(--terracotta); }
+  .flag-dot{ color:var(--terracotta); margin-right:4px; }
+
+  /* ---------- PRINT ---------- */
+  #print-area{ display:none; }
+  @media print{
+    body *{ visibility:hidden; }
+    #print-area, #print-area *{ visibility:visible; }
+    #print-area{ display:block; position:absolute; left:0; top:0; width:100%; padding:20px; }
+    #print-area h1{ font-family: Georgia, serif; font-size:22px; margin-bottom:2px; }
+    #print-area h2{ font-family: Georgia, serif; font-size:16px; color:#4F5C44; margin:20px 0 4px; }
+    #print-area .print-meta{ font-family: sans-serif; font-size:11px; color:#666; margin-bottom:14px; }
+    #print-area .print-block{ margin-bottom:16px; font-size:13px; line-height:1.6; }
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  .mobile-topbar{
+    display:none;
+    align-items:center;
+    gap:12px;
+    padding:12px 16px;
+    border-bottom:1px solid var(--border);
+    background:var(--bg);
+  }
+  .mobile-topbar button{
+    font-size:20px; background:none; border:none; color:var(--ink); cursor:pointer; padding:4px 8px; line-height:1;
+  }
+  .mobile-topbar .mobile-title{ font-family: Georgia, serif; font-size:16px; color:var(--sage-dark); }
+  .sidebar-overlay{ display:none; }
+  .sidebar-close-btn{ display:none; }
+
+  /* Tablet: stack source/notes columns, loosen up padding a touch */
+  @media (max-width: 900px){
+    .split-row{ flex-direction:column; }
+    .rich-editable.scrollable{ max-height:280px; }
+  }
+
+  /* Phones/small tablets: sidebar becomes a slide-out drawer */
+  @media (max-width: 760px){
+    body{ height:100vh; height:100dvh; }
+    .mobile-topbar{ display:flex; }
+    .shelf{
+      position:fixed; left:0; top:0; bottom:0; z-index:50;
+      width:86vw; max-width:340px; min-width:0;
+      transform:translateX(-100%);
+      transition:transform .22s ease;
+      box-shadow:3px 0 18px rgba(0,0,0,0.25);
+    }
+    body.sidebar-open .shelf{ transform:translateX(0); }
+    .sidebar-close-btn{
+      display:block; position:absolute; right:10px; top:10px; z-index:2;
+      background:none; border:none; font-size:18px; color:var(--ink-soft); cursor:pointer; padding:6px;
+    }
+    .sidebar-overlay{
+      display:block; position:fixed; inset:0; background:rgba(30,26,20,0.4); z-index:45;
+      opacity:0; pointer-events:none; transition:opacity .22s ease;
+    }
+    body.sidebar-open .sidebar-overlay{ opacity:1; pointer-events:auto; }
+
+    .toolbar{ padding:14px 16px 8px; }
+    .page-scroll{ padding:16px 0 50px; }
+    .sheet-col{ width:94%; gap:14px; }
+    .card{ padding:16px 18px; }
+    .title-row{ flex-wrap:wrap; row-gap:8px; }
+    .main-title-input{ font-size:19px; min-width:180px; }
+    .breadcrumb{ font-size:10px; }
+    .done-toggle, .flag-toggle{ font-size:11px; padding:7px 11px; }
+    .fmt-toolbar button{ width:36px; height:36px; }
+    .fmt-toolbar button.wide{ padding:0 12px; }
+    .modal{ width:min(340px, 90vw); max-height:85vh; overflow-y:auto; }
+    .dash-actions{ flex-direction:column; }
+    .dash-actions button{ width:100%; padding:9px 12px; }
+    .reading-row{ flex-wrap:wrap; }
+    .reading-row input[type=text]{ min-width:140px; }
+    .reading-link-select{ max-width:none; flex:1; min-width:120px; }
+    .meta-row{ flex-wrap:wrap; }
+    .tags-input{ min-width:140px; }
+    .quick-days button{ padding:7px 10px; }
+    .add-day-btn, .add-chapter-btn{ padding:8px; }
+    .day-item, .item-spine{ padding:9px 10px; }
+  }
+
+  @media (max-width: 420px){
+    .shelf-head h1{ font-size:17px; }
+    .mode-tabs button{ font-size:10px; padding:8px 2px; }
+    .main-title-input{ font-size:17px; }
+    .card h3{ font-size:10px; }
+  }
+
+  /* ---------- DARK MODE ---------- */
+  body.dark-mode{
+    --bg: #21201C;
+    --paper: #2B2A25;
+    --ink: #EDE7D9;
+    --ink-soft: #A79E8C;
+    --sage: #8FA283;
+    --sage-dark: #A7C29B;
+    --sage-tint: #333A2E;
+    --terracotta: #D97A54;
+    --terracotta-soft: #5A3A2C;
+    --ochre: #D9B15C;
+    --ochre-tint: #3A331F;
+    --border: #45412F;
+    --danger: #E27A5D;
+  }
+  body.dark-mode .shelf{ background: linear-gradient(180deg, #26251F, #201F1A); }
+  body.dark-mode ::selection{ background: var(--ochre); color:#1a1a1a; }
+  .theme-toggle-btn{
+    position:absolute; right:14px; top:18px; background:none; border:1px solid var(--border); border-radius:14px;
+    font-size:14px; padding:4px 10px; cursor:pointer; color:var(--ink-soft);
+  }
+
+  /* ---------- UNDO TOAST ---------- */
+  .undo-toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:80;
+    background:var(--ink); color:var(--bg); font-family: system-ui, sans-serif; font-size:13px;
+    padding:10px 16px; border-radius:8px; display:flex; align-items:center; gap:14px; box-shadow:0 6px 20px rgba(0,0,0,0.3);
+    opacity:0; pointer-events:none; transition:opacity .2s ease;
+  }
+  .undo-toast.show{ opacity:1; pointer-events:auto; }
+  .undo-toast button{ background:none; border:1px solid var(--bg); color:var(--bg); border-radius:5px; padding:4px 10px; font-size:12px; cursor:pointer; }
+
+  /* ---------- HEATMAP ---------- */
+  .heatmap-wrap{ display:flex; gap:3px; flex-wrap:wrap; max-width:100%; }
+  .heatmap-cell{ width:12px; height:12px; border-radius:2px; background:var(--border); }
+  .heatmap-legend{ font-family: system-ui, sans-serif; font-size:10.5px; color:var(--ink-soft); margin-top:6px; }
+
+  /* ---------- WEEK/DAY MANAGEMENT ---------- */
+  .week-label-row{ display:flex; align-items:center; gap:6px; }
+  .week-edit-btn{
+    background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:11px; padding:2px 4px;
+  }
+  .week-edit-btn:hover{ color:var(--sage-dark); }
+  .day-item-row{ display:flex; align-items:center; gap:2px; }
+  .day-move-btn{
+    background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:10px; padding:2px 4px; flex-shrink:0;
+  }
+  .day-move-btn:hover{ color:var(--sage-dark); }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<aside class="shelf">
+  <button class="sidebar-close-btn" id="sidebar-close-btn">✕</button>
+  <div class="shelf-head" style="position:relative;">
+    <h1>Study Toolkit</h1>
+    <div class="sub">Masters of Counselling</div>
+    <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle dark mode">🌙</button>
+  </div>
+
+  <div class="mode-tabs">
+    <button id="tab-dashboard" class="active">Home</button>
+    <button id="tab-planner">Planner</button>
+    <button id="tab-library">Library</button>
+    <button id="tab-highlights">★ Highlights</button>
+  </div>
+
+  <div class="search-row">
+    <input type="text" id="search-input" placeholder="Search this section…">
+  </div>
+  <div class="search-results" id="search-results" style="display:none;"></div>
+  <div class="search-row" id="assessment-filter-row" style="padding-top:0;">
+    <select id="assessment-filter" style="width:100%; padding:6px 8px; border-radius:6px; border:1px solid var(--border); font-family: system-ui, sans-serif; font-size:12px; background:var(--paper); color:var(--ink-soft);">
+      <option value="all">All assessments</option>
+    </select>
+  </div>
+
+  <button class="add-top-btn" id="add-top-btn">+ Add a unit</button>
+  <div class="tree" id="tree"></div>
+
+  <div class="quick-capture">
+    <textarea id="quick-capture-textarea" placeholder="Quick capture — jot a fleeting thought, sort it later…"></textarea>
+    <button id="quick-capture-save-btn">Save note</button>
+  </div>
+
+  <div id="sync-status" style="padding:8px 14px; font-family: system-ui, sans-serif; font-size:11px; color:var(--ink-soft); border-top:1px solid var(--border);">Not connected to Firebase</div>
+  <div class="shelf-foot">
+    <button id="export-btn">Export backup</button>
+    <button id="import-btn">Import backup</button>
+    <input type="file" id="import-file" accept="application/json">
+  </div>
+</aside>
+
+<main class="page">
+  <div class="mobile-topbar" id="mobile-topbar">
+    <button id="sidebar-toggle-btn" title="Menu">☰</button>
+    <span class="mobile-title" id="mobile-title">Home</span>
+  </div>
+  <div class="toolbar" id="toolbar" style="display:none;"></div>
+  <div id="remote-update-banner" style="display:none; background:var(--ochre-tint); border-bottom:1px solid var(--border); padding:8px 30px; font-family: system-ui, sans-serif; font-size:12px; color:var(--ink); display:flex; align-items:center; gap:10px;">
+    <span>This toolkit was updated on another device.</span>
+    <button id="reload-remote-btn" style="font-size:11px; padding:4px 10px; border-radius:5px; border:1px solid var(--border); background:#fff; cursor:pointer;">Reload latest</button>
+  </div>
+  <div class="page-scroll" id="page-scroll">
+    <div class="empty-state" id="empty-state">
+      <h2>Pick a day, or start one</h2>
+      <p>Add a unit on the left. Each unit gets six weeks automatically — add a day under whichever week you're up to, then fill in the topic, readings, notes and reflection for that day.</p>
+    </div>
+    <div class="sheet-col" id="sheet-col" style="display:none;"></div>
+  </div>
+  <div id="print-area"></div>
+</main>
+
+<input type="file" id="image-file-input" accept="image/*" style="display:none;">
+<div class="undo-toast" id="undo-toast">
+  <span id="undo-toast-text">Deleted.</span>
+  <button id="undo-toast-btn">Undo</button>
+</div>
+
+<!-- Unit modal -->
+<div class="modal-backdrop" id="unit-modal-backdrop">
+  <div class="modal">
+    <h3 id="unit-modal-heading">Add a unit</h3>
+    <label>Unit code</label>
+    <input type="text" id="unit-code-input" placeholder="e.g. COU6503.3">
+    <label>Unit title</label>
+    <input type="text" id="unit-title-input" placeholder="e.g. Counselling Theories">
+    <label>Start date (optional — lets the app highlight "this week")</label>
+    <input type="date" id="unit-startdate-input">
+    <label>Colour</label>
+    <div class="swatches" id="unit-swatches"></div>
+    <div class="modal-actions">
+      <button id="unit-cancel-btn">Cancel</button>
+      <button class="primary" id="unit-save-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Day modal -->
+<div class="modal-backdrop" id="day-modal-backdrop">
+  <div class="modal">
+    <h3 id="day-modal-heading">Add a day</h3>
+    <label>Day label</label>
+    <input type="text" id="day-label-input" placeholder="e.g. Monday, or Day 1">
+    <div class="quick-days" id="quick-days"></div>
+    <div class="modal-actions">
+      <button id="day-cancel-btn">Cancel</button>
+      <button class="primary" id="day-save-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk add modal -->
+<div class="modal-backdrop" id="bulk-modal-backdrop">
+  <div class="modal" style="width:420px;">
+    <h3 id="bulk-modal-heading">Paste a list of topics</h3>
+    <label>Paste one topic per line — module lists, numbered items, or a bullet list all work</label>
+    <textarea id="bulk-textarea" rows="10" style="width:100%; padding:8px 9px; border-radius:5px; border:1px solid var(--border); font-family: system-ui, sans-serif; font-size:12.5px; resize:vertical;" placeholder="4.1 Introduction to the ethics of managing roles and responsibilities
+4.2 Ethical principles
+4.3 Dual and multiple roles
+4.4 Conflicting responsibilities"></textarea>
+    <div class="modal-actions">
+      <button id="bulk-cancel-btn">Cancel</button>
+      <button class="primary" id="bulk-save-btn">Add all</button>
+    </div>
+  </div>
+</div>
+
+<!-- Book modal (library) -->
+<div class="modal-backdrop" id="book-modal-backdrop">
+  <div class="modal">
+    <h3 id="book-modal-heading">Add a book</h3>
+    <label>Title</label>
+    <input type="text" id="book-title-input" placeholder="e.g. Groups: Process and Practice">
+    <label>Author</label>
+    <input type="text" id="book-author-input" placeholder="e.g. Corey, Corey &amp; Corey">
+    <label>Full APA7 reference (optional)</label>
+    <input type="text" id="book-fullref-input" placeholder="Corey, M.S., Corey, G. &amp; Corey, C. (2017). Groups...">
+    <label>In-text citation (optional)</label>
+    <input type="text" id="book-intext-input" placeholder="(Corey, Corey &amp; Corey, 2017)">
+    <label>Spine colour</label>
+    <div class="swatches" id="book-swatches"></div>
+    <div class="modal-actions">
+      <button id="book-cancel-btn">Cancel</button>
+      <button class="primary" id="book-save-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Chapter modal (library) -->
+<div class="modal-backdrop" id="chapter-modal-backdrop">
+  <div class="modal">
+    <h3>Add a chapter</h3>
+    <label>Chapter title</label>
+    <input type="text" id="chapter-title-modal-input" placeholder="e.g. Ch. 4 — Leadership Styles">
+    <div class="modal-actions">
+      <button id="chapter-cancel-btn">Cancel</button>
+      <button class="primary" id="chapter-save-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "counsellingStudyToolkit_v2";
+  var SPINE_COLORS = ["#B5592E","#7C8B6F","#C99A3D","#5B7A99","#8C6A9E","#A5432A"];
+  var OBJECTIVE_COLORS = ["#F5D98B","#B9DDF0","#C9E4B0","#F0C4DC","#D9C7F0","#F5C99B","#B8E3D8","#E3C9C9"];
+  var WEEK_NUMBERS = [1,2,3,4,5,6];
+
+  // ================= FIREBASE (optional sync) =================
+  // Paste your own Firebase project's config below to enable cross-device sync.
+  // Get this from: Firebase console -> Project settings -> Your apps -> SDK setup and configuration.
+  // Leave as-is (with "YOUR_" placeholders) to keep the app running on local storage only.
+  var FIREBASE_CONFIG = {
+    apiKey: "AIzaSyD2pV_rCmLLaVDE7RVi7WOQV_f1aPUtjw8",
+    authDomain: "daniel-study-tool.firebaseapp.com",
+    databaseURL: "https://daniel-study-tool-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "daniel-study-tool",
+    storageBucket: "daniel-study-tool.firebasestorage.app",
+    messagingSenderId: "1039217707701",
+    appId: "1:1039217707701:web:4181976f1b38648261ccfc"
+  };
+  var FIREBASE_PATH = "counsellingStudyToolkit"; // change if you reuse a project across apps
+
+  var firebaseEnabled = FIREBASE_CONFIG.apiKey.indexOf("YOUR_") !== 0;
+  var fbRef = null;
+  var lastWrittenJSON = null;
+  var pendingRemoteData = null;
+
+  function setSyncStatus(text){
+    var el = document.getElementById("sync-status");
+    if(el) el.textContent = text;
+  }
+  function syncedLabel(){
+    return "Synced to Firebase • " + new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+  }
+
+  if(firebaseEnabled){
+    try{
+      firebase.initializeApp(FIREBASE_CONFIG);
+      fbRef = firebase.database().ref(FIREBASE_PATH);
+      setSyncStatus("Signing in…");
+    }catch(e){
+      console.error("Firebase init failed", e);
+      firebaseEnabled = false;
+      setSyncStatus("Firebase config error — using local storage only");
+    }
+  } else {
+    setSyncStatus("Local storage only (no Firebase config)");
+  }
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+  // ---------- seed data ----------
+  function emptyWeeks(){
+    return WEEK_NUMBERS.map(function(n){ return {number:n, days:[]}; });
+  }
+  function seedData(){
+    var unitId = uid();
+    var weeks = emptyWeeks();
+    var day1 = { id: uid(), label:"Day 1", topic:"Example — how this planner works",
+      readings:[{id:uid(), text:"Corey, Corey & Corey (2017), Ch. 1 — pp. 1–20", done:false}],
+      sourceText:"<p>Paste the actual textbook pages here \u2014 this box sits right next to your notes so you can write while looking at the source, instead of switching windows.</p>",
+      sourceRange:"pp. 1\u201320",
+      notes:"<p>Each day sits under a week (1–6) inside a unit. Fill in the topic, tick off readings as you go, write your notes here, and use the separate <b>Reflection</b> card below for your reflective writing — kept apart from notes on purpose, since reflections are their own thing.</p>",
+      reflection:"<p>This is where a reflection would go — e.g. what stood out, how it links to your own experience, questions it raised.</p>",
+      done:false, updated:Date.now() };
+    weeks[0].days.push(day1);
+    var unit = { id:unitId, code:"EXAMPLE", title:"Example unit — delete anytime", color:SPINE_COLORS[1], weeks: weeks };
+
+    var bookId = uid();
+    var book = {
+      id:bookId, title:"Groups: Process and Practice",
+      author:"Corey, M.S., Corey, G. & Corey, C. (2017, 10th ed.)",
+      fullReference:"Corey, M. S., Corey, G., & Corey, C. (2017). Groups: Process and practice (10th ed.). Cengage.",
+      inTextCitation:"(Corey, Corey & Corey, 2017)",
+      color:SPINE_COLORS[0],
+      chapters:[{ id:uid(), title:"Ch. 1 — Introduction to Group Work", tags:["foundations"], sourceText:"", sourceRange:"", notes:"", updated:Date.now() }]
+    };
+    return { units:[unit], books:[book], quickCaptures:[] };
+  }
+
+  function load(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        var parsed = JSON.parse(raw);
+        if(parsed && Array.isArray(parsed.units) && Array.isArray(parsed.books)){
+          if(!Array.isArray(parsed.quickCaptures)) parsed.quickCaptures = [];
+          return parsed;
+        }
+      }
+    }catch(e){ console.error("Load failed", e); }
+    return seedData();
+  }
+
+  var data = load();
+  var state = {
+    mode: "dashboard",        // "dashboard" | "planner" | "library" | "highlights"
+    openUnitId: null,
+    openBookId: null,
+    activeDayId: null,
+    activeChapterId: null,
+    highlightsFlaggedOnly: false
+  };
+
+  function persist(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+    catch(e){ console.error("Local save failed", e); }
+    if(firebaseEnabled && fbRef){
+      var json = JSON.stringify(data);
+      lastWrittenJSON = json;
+      fbRef.set(data).then(function(){
+        setSyncStatus(syncedLabel());
+      }).catch(function(err){
+        console.error("Firebase write failed", err);
+        setSyncStatus("Sync failed — saved locally only");
+      });
+    }
+  }
+
+  // ---------- DOM refs ----------
+  var tabDashboard = document.getElementById("tab-dashboard");
+  var tabPlanner = document.getElementById("tab-planner");
+  var tabLibrary = document.getElementById("tab-library");
+  var tabHighlights = document.getElementById("tab-highlights");
+  var addTopBtn = document.getElementById("add-top-btn");
+  var treeEl = document.getElementById("tree");
+  var searchInput = document.getElementById("search-input");
+  var searchResultsEl = document.getElementById("search-results");
+  var assessmentFilterRow = document.getElementById("assessment-filter-row");
+  var assessmentFilterSelect = document.getElementById("assessment-filter");
+  var exportBtn = document.getElementById("export-btn");
+  var importBtn = document.getElementById("import-btn");
+  var importFile = document.getElementById("import-file");
+  var quickCaptureTextarea = document.getElementById("quick-capture-textarea");
+  var quickCaptureSaveBtn = document.getElementById("quick-capture-save-btn");
+  var printAreaEl = document.getElementById("print-area");
+  var sidebarToggleBtn = document.getElementById("sidebar-toggle-btn");
+  var sidebarCloseBtn = document.getElementById("sidebar-close-btn");
+  var sidebarOverlay = document.getElementById("sidebar-overlay");
+  var mobileTitleEl = document.getElementById("mobile-title");
+  var themeToggleBtn = document.getElementById("theme-toggle-btn");
+  var undoToastEl = document.getElementById("undo-toast");
+  var undoToastText = document.getElementById("undo-toast-text");
+  var undoToastBtn = document.getElementById("undo-toast-btn");
+  var imageFileInput = document.getElementById("image-file-input");
+
+  var toolbarEl = document.getElementById("toolbar");
+  var remoteUpdateBanner = document.getElementById("remote-update-banner");
+  var reloadRemoteBtn = document.getElementById("reload-remote-btn");
+  var emptyStateEl = document.getElementById("empty-state");
+  var sheetColEl = document.getElementById("sheet-col");
+
+  var unitModalBackdrop = document.getElementById("unit-modal-backdrop");
+  var unitModalHeading = document.getElementById("unit-modal-heading");
+  var unitCodeInput = document.getElementById("unit-code-input");
+  var unitTitleInput = document.getElementById("unit-title-input");
+  var unitStartDateInput = document.getElementById("unit-startdate-input");
+  var unitSwatchesEl = document.getElementById("unit-swatches");
+  var unitCancelBtn = document.getElementById("unit-cancel-btn");
+  var unitSaveBtn = document.getElementById("unit-save-btn");
+
+  var dayModalBackdrop = document.getElementById("day-modal-backdrop");
+  var dayModalHeading = document.getElementById("day-modal-heading");
+  var dayLabelInput = document.getElementById("day-label-input");
+  var quickDaysEl = document.getElementById("quick-days");
+  var dayCancelBtn = document.getElementById("day-cancel-btn");
+  var daySaveBtn = document.getElementById("day-save-btn");
+
+  var bulkModalBackdrop = document.getElementById("bulk-modal-backdrop");
+  var bulkModalHeading = document.getElementById("bulk-modal-heading");
+  var bulkTextarea = document.getElementById("bulk-textarea");
+  var bulkCancelBtn = document.getElementById("bulk-cancel-btn");
+  var bulkSaveBtn = document.getElementById("bulk-save-btn");
+  var bulkModalUnitId = null, bulkModalWeekNumber = null;
+
+  var bookModalBackdrop = document.getElementById("book-modal-backdrop");
+  var bookModalHeading = document.getElementById("book-modal-heading");
+  var bookTitleInput = document.getElementById("book-title-input");
+  var bookAuthorInput = document.getElementById("book-author-input");
+  var bookFullrefInput = document.getElementById("book-fullref-input");
+  var bookIntextInput = document.getElementById("book-intext-input");
+  var bookSwatchesEl = document.getElementById("book-swatches");
+  var bookCancelBtn = document.getElementById("book-cancel-btn");
+  var bookSaveBtn = document.getElementById("book-save-btn");
+
+  var chapterModalBackdrop = document.getElementById("chapter-modal-backdrop");
+  var chapterTitleModalInput = document.getElementById("chapter-title-modal-input");
+  var chapterCancelBtn = document.getElementById("chapter-cancel-btn");
+  var chapterSaveBtn = document.getElementById("chapter-save-btn");
+
+  var selectedUnitSwatch = SPINE_COLORS[0];
+  var selectedBookSwatch = SPINE_COLORS[0];
+  var editingUnitId = null;
+  var editingBookId = null;
+  var dayModalUnitId = null, dayModalWeekNumber = null;
+  var chapterModalBookId = null;
+
+  var activeEditable = null; // last-focused rich editable element, for formatting commands
+  var saveTimer = null;
+
+  // ---------- helpers ----------
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function stripHtml(html){
+    var tmp = document.createElement("div");
+    tmp.innerHTML = html || "";
+    return tmp.textContent || "";
+  }
+  function countWords(html){
+    var text = stripHtml(html).trim();
+    return text ? text.split(/\s+/).length : 0;
+  }
+  function parseBulkLines(text){
+    return text.split("\n").map(function(l){ return l.trim(); }).filter(Boolean).map(function(line){
+      line = line.replace(/^[-*•]\s*/, "");
+      var linkMatch = line.match(/^\[([^\]]+)\]\([^)]*\)$/);
+      if(linkMatch) return linkMatch[1].trim();
+      return line;
+    });
+  }
+  function findUnit(id){ return data.units.find(function(u){ return u.id === id; }); }
+  function findBook(id){ return data.books.find(function(b){ return b.id === id; }); }
+  function findDay(unit, dayId){
+    for(var i=0;i<unit.weeks.length;i++){
+      var d = unit.weeks[i].days.find(function(x){ return x.id === dayId; });
+      if(d) return {week:unit.weeks[i], day:d};
+    }
+    return null;
+  }
+  function findChapter(book, id){ return book.chapters.find(function(c){ return c.id === id; }); }
+  function computeCurrentWeekNumber(unit){
+    if(!unit.startDate) return null;
+    var start = new Date(unit.startDate + "T00:00:00");
+    if(isNaN(start.getTime())) return null;
+    var diffDays = Math.floor((Date.now() - start.getTime()) / (24*3600*1000));
+    var weekNum = Math.floor(diffDays / 7) + 1;
+    if(weekNum < 1 || weekNum > 6) return null;
+    return weekNum;
+  }
+  function unitProgress(unit){
+    var total = 0, done = 0;
+    unit.weeks.forEach(function(w){
+      w.days.forEach(function(d){ total++; if(d.done) done++; });
+    });
+    return { total:total, done:done, pct: total ? Math.round((done/total)*100) : 0 };
+  }
+  function findBookForChapterId(chapterId){
+    for(var i=0;i<data.books.length;i++){
+      var ch = findChapter(data.books[i], chapterId);
+      if(ch) return {book:data.books[i], chapter:ch};
+    }
+    return null;
+  }
+  function findNextIncompleteDay(unit){
+    for(var i=0;i<unit.weeks.length;i++){
+      var week = unit.weeks[i];
+      for(var j=0;j<week.days.length;j++){
+        if(!week.days[j].done) return {week:week, day:week.days[j]};
+      }
+    }
+    return null;
+  }
+  function unitWordCount(unit){
+    var total = 0;
+    unit.weeks.forEach(function(w){
+      w.days.forEach(function(d){
+        total += countWords(d.notes) + countWords(d.reflection) + countWords(d.sourceText);
+      });
+    });
+    return total;
+  }
+  function collectActivityDates(){
+    var counts = {};
+    function bump(ts){
+      if(!ts) return;
+      var d = new Date(ts);
+      var key = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
+      counts[key] = (counts[key] || 0) + 1;
+    }
+    data.units.forEach(function(u){ u.weeks.forEach(function(w){ w.days.forEach(function(d){ bump(d.updated); }); }); });
+    data.books.forEach(function(b){ b.chapters.forEach(function(c){ bump(c.updated); }); });
+    return counts;
+  }
+  function renderActivityHeatmap(container){
+    var counts = collectActivityDates();
+    var days = 84; // ~12 weeks
+    var today = new Date();
+    today.setHours(0,0,0,0);
+    var wrap = document.createElement("div");
+    wrap.className = "heatmap-wrap";
+    for(var i = days - 1; i >= 0; i--){
+      var d = new Date(today.getTime() - i*24*3600*1000);
+      var key = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
+      var count = counts[key] || 0;
+      var cell = document.createElement("div");
+      cell.className = "heatmap-cell";
+      cell.title = d.toDateString() + ": " + count + " update" + (count === 1 ? "" : "s");
+      var opacity = count === 0 ? 0 : Math.min(1, 0.25 + count * 0.2);
+      if(count > 0) cell.style.background = "var(--sage)";
+      if(count > 0) cell.style.opacity = opacity;
+      wrap.appendChild(cell);
+    }
+    container.appendChild(wrap);
+    var legend = document.createElement("div");
+    legend.className = "heatmap-legend";
+    legend.textContent = "Last 12 weeks of activity — darker squares mean more edits that day";
+    container.appendChild(legend);
+  }
+  function activeDayCtx(){
+    for(var i=0;i<data.units.length;i++){
+      var u = data.units[i];
+      var f = findDay(u, state.activeDayId);
+      if(f) return {unit:u, week:f.week, day:f.day};
+    }
+    return null;
+  }
+  function activeChapterCtx(){
+    for(var i=0;i<data.books.length;i++){
+      var b = data.books[i];
+      var c = findChapter(b, state.activeChapterId);
+      if(c) return {book:b, chapter:c};
+    }
+    return null;
+  }
+
+  function renderSwatchPicker(container, current, onPick){
+    container.innerHTML = "";
+    SPINE_COLORS.forEach(function(color){
+      var sw = document.createElement("div");
+      sw.className = "swatch" + (color === current ? " selected" : "");
+      sw.style.background = color;
+      sw.addEventListener("click", function(){ onPick(color); });
+      container.appendChild(sw);
+    });
+  }
+
+  // ================= MOBILE SIDEBAR DRAWER =================
+  function openSidebar(){ document.body.classList.add("sidebar-open"); }
+  function closeSidebar(){ document.body.classList.remove("sidebar-open"); }
+  function isMobileViewport(){ return window.innerWidth <= 760; }
+  sidebarToggleBtn.addEventListener("click", openSidebar);
+  sidebarCloseBtn.addEventListener("click", closeSidebar);
+  sidebarOverlay.addEventListener("click", closeSidebar);
+
+  // ================= DARK MODE =================
+  var THEME_KEY = "counsellingStudyToolkit_theme";
+  function applyTheme(dark){
+    document.body.classList.toggle("dark-mode", dark);
+    themeToggleBtn.textContent = dark ? "☀️" : "🌙";
+    try{ localStorage.setItem(THEME_KEY, dark ? "dark" : "light"); }catch(e){}
+  }
+  themeToggleBtn.addEventListener("click", function(){
+    applyTheme(!document.body.classList.contains("dark-mode"));
+  });
+  (function initTheme(){
+    var saved = null;
+    try{ saved = localStorage.getItem(THEME_KEY); }catch(e){}
+    if(saved === "dark") applyTheme(true);
+    else if(saved === "light") applyTheme(false);
+    else if(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) applyTheme(true);
+  })();
+
+  // ================= UNDO TOAST =================
+  var undoTimer = null;
+  var undoAction = null;
+  function showUndoToast(message, onUndo){
+    clearTimeout(undoTimer);
+    undoAction = onUndo;
+    undoToastText.textContent = message;
+    undoToastEl.classList.add("show");
+    undoTimer = setTimeout(function(){
+      undoToastEl.classList.remove("show");
+      undoAction = null;
+    }, 6000);
+  }
+  undoToastBtn.addEventListener("click", function(){
+    clearTimeout(undoTimer);
+    undoToastEl.classList.remove("show");
+    if(undoAction){ undoAction(); undoAction = null; }
+  });
+
+  function renderQA(entity, listId, addBtnId){
+    entity.qa = entity.qa || [];
+    var listEl = document.getElementById(listId);
+    listEl.innerHTML = "";
+    entity.qa.forEach(function(item){
+      var row = document.createElement("div");
+      row.className = "qa-item";
+      row.innerHTML =
+        '<input type="text" class="qa-q" placeholder="Question…">' +
+        '<textarea class="qa-a hidden-answer" placeholder="Answer…" rows="2"></textarea>' +
+        '<div class="qa-item-actions"><button class="qa-reveal-btn">Show answer</button><button class="qa-remove-btn" title="Remove">✕</button></div>';
+      var qInput = row.querySelector(".qa-q");
+      var aInput = row.querySelector(".qa-a");
+      var revealBtn = row.querySelector(".qa-reveal-btn");
+      qInput.value = item.question || "";
+      aInput.value = item.answer || "";
+      qInput.addEventListener("input", function(){ item.question = qInput.value; scheduleSave(function(){}); });
+      aInput.addEventListener("input", function(){ item.answer = aInput.value; scheduleSave(function(){}); });
+      revealBtn.addEventListener("click", function(){
+        var hidden = aInput.classList.toggle("hidden-answer");
+        revealBtn.textContent = hidden ? "Show answer" : "Hide answer";
+      });
+      row.querySelector(".qa-remove-btn").addEventListener("click", function(){
+        entity.qa = entity.qa.filter(function(q){ return q.id !== item.id; });
+        persist();
+        renderQA(entity, listId, addBtnId);
+      });
+      listEl.appendChild(row);
+    });
+    var addBtn = document.getElementById(addBtnId);
+    addBtn.onclick = function(){
+      entity.qa.push({ id:uid(), question:"", answer:"" });
+      persist();
+      renderQA(entity, listId, addBtnId);
+      var qInputs = document.getElementById(listId).querySelectorAll(".qa-q");
+      if(qInputs.length) qInputs[qInputs.length-1].focus();
+    };
+  }
+
+  // ================= IMAGE INSERT =================
+  function insertImageDataUrl(dataUrl){
+    if(!activeEditable) return;
+    activeEditable.focus();
+    var img = '<img src="' + dataUrl + '" alt="pasted image">';
+    document.execCommand("insertHTML", false, img);
+    activeEditable.dispatchEvent(new Event("input"));
+  }
+  function readFileAsImage(file, cb){
+    if(!file || file.type.indexOf("image/") !== 0) return;
+    if(file.size > 4 * 1024 * 1024){
+      alert("That image is quite large (" + Math.round(file.size/1024/1024) + "MB). Since images are stored inline, large ones will bloat your backup and slow syncing. Consider a smaller or compressed version.");
+    }
+    var reader = new FileReader();
+    reader.onload = function(e){ cb(e.target.result); };
+    reader.readAsDataURL(file);
+  }
+  imageFileInput.addEventListener("change", function(){
+    var file = imageFileInput.files[0];
+    if(file) readFileAsImage(file, insertImageDataUrl);
+    imageFileInput.value = "";
+  });
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "insert-image-btn"){
+      imageFileInput.click();
+    }
+  });
+  document.addEventListener("paste", function(e){
+    if(!activeEditable || document.activeElement !== activeEditable) return;
+    var items = (e.clipboardData || window.clipboardData).items;
+    if(!items) return;
+    for(var i=0;i<items.length;i++){
+      if(items[i].type.indexOf("image/") === 0){
+        e.preventDefault();
+        var file = items[i].getAsFile();
+        readFileAsImage(file, insertImageDataUrl);
+        return;
+      }
+    }
+  });
+  document.addEventListener("keydown", function(e){
+    var mod = e.ctrlKey || e.metaKey;
+    if(mod && (e.key === "s" || e.key === "S")){
+      e.preventDefault();
+      persist();
+      setSaveStatus("Saved (Ctrl+S)");
+      setTimeout(function(){ setSaveStatus("Saved"); }, 1200);
+    } else if(mod && e.key === "Enter"){
+      e.preventDefault();
+      if(state.mode === "planner"){
+        var ctx = activeDayCtx();
+        if(ctx){ ctx.day.done = !ctx.day.done; persist(); renderTree(); renderPlannerMain(); }
+      } else if(state.mode === "library"){
+        var lctx = activeChapterCtx();
+        if(lctx){ lctx.chapter.flagged = !lctx.chapter.flagged; persist(); renderLibraryMain(); }
+      }
+    }
+  });
+
+  var MODE_LABELS = { dashboard:"Home", planner:"Study Planner", library:"Book Library", highlights:"★ Highlights" };
+
+  // ================= MODE SWITCHING =================
+  function setMode(mode){
+    state.mode = mode;
+    tabDashboard.classList.toggle("active", mode === "dashboard");
+    tabPlanner.classList.toggle("active", mode === "planner");
+    tabLibrary.classList.toggle("active", mode === "library");
+    tabHighlights.classList.toggle("active", mode === "highlights");
+    addTopBtn.style.display = (mode === "planner" || mode === "library") ? "block" : "none";
+    if(mode === "planner") addTopBtn.textContent = "+ Add a unit";
+    if(mode === "library") addTopBtn.textContent = "+ Add a book";
+    searchInput.placeholder = mode === "planner" ? "Search topics, readings, notes…" : (mode === "library" ? "Search chapters, tags, notes…" : "Search isn't needed here");
+    searchInput.value = "";
+    searchResultsEl.style.display = "none";
+    assessmentFilterRow.style.display = (mode === "planner" || mode === "library") ? "block" : "none";
+    mobileTitleEl.textContent = MODE_LABELS[mode] || "Study Toolkit";
+    populateAssessmentFilter();
+    renderTree();
+    renderMain();
+    if(isMobileViewport()) closeSidebar();
+  }
+  function populateAssessmentFilter(){
+    var values = {};
+    if(state.mode === "planner"){
+      data.units.forEach(function(u){ u.weeks.forEach(function(w){ w.days.forEach(function(d){ if(d.assessment) values[d.assessment]=true; }); }); });
+    } else if(state.mode === "library"){
+      data.books.forEach(function(b){ b.chapters.forEach(function(c){ if(c.assessment) values[c.assessment]=true; }); });
+    }
+    var current = assessmentFilterSelect.value || "all";
+    assessmentFilterSelect.innerHTML = '<option value="all">All assessments</option>';
+    Object.keys(values).sort().forEach(function(v){
+      var opt = document.createElement("option");
+      opt.value = v; opt.textContent = v;
+      assessmentFilterSelect.appendChild(opt);
+    });
+    assessmentFilterSelect.value = values[current] ? current : "all";
+  }
+  assessmentFilterSelect.addEventListener("change", function(){ renderTree(); });
+  tabDashboard.addEventListener("click", function(){ setMode("dashboard"); });
+  tabPlanner.addEventListener("click", function(){ setMode("planner"); });
+  tabLibrary.addEventListener("click", function(){ setMode("library"); });
+  tabHighlights.addEventListener("click", function(){ setMode("highlights"); });
+  addTopBtn.addEventListener("click", function(){
+    if(state.mode === "planner") openUnitModal(); else openBookModal();
+  });
+
+  quickCaptureSaveBtn.addEventListener("click", function(){
+    var text = quickCaptureTextarea.value.trim();
+    if(!text) return;
+    data.quickCaptures = data.quickCaptures || [];
+    data.quickCaptures.unshift({ id:uid(), text:text, created:Date.now() });
+    quickCaptureTextarea.value = "";
+    persist();
+    if(state.mode === "dashboard") renderMain();
+  });
+
+  // ================= TREE RENDER =================
+  function renderTree(){
+    treeEl.innerHTML = "";
+    if(state.mode === "planner") renderPlannerTree();
+    else if(state.mode === "library") renderLibraryTree();
+    // dashboard and highlights modes have no tree — main panel shows everything
+  }
+
+  function renderPlannerTree(){
+    var filterVal = assessmentFilterSelect.value || "all";
+    data.units.forEach(function(unit){
+      var row = document.createElement("div");
+      row.className = "item-row" + (state.openUnitId === unit.id ? " open" : "");
+
+      var spine = document.createElement("div");
+      spine.className = "item-spine";
+      spine.style.setProperty("--spine-color", unit.color || SPINE_COLORS[0]);
+      spine.innerHTML = '<span class="caret">▶</span><span class="titles"><div class="t1"></div><div class="t2"></div><div class="progress-track"><div class="progress-fill" style="width:0%"></div></div></span><button class="item-menu-btn edit-unit-btn" title="Edit unit">✎</button><button class="item-menu-btn" title="Delete unit">✕</button>';
+      var currentWeek = computeCurrentWeekNumber(unit);
+      spine.querySelector(".t1").textContent = unit.code ? (unit.code + " — " + unit.title) : unit.title;
+      var t2 = spine.querySelector(".t2");
+      t2.textContent = currentWeek ? ("Week " + currentWeek + " of 6") : "6 week unit";
+      var prog = unitProgress(unit);
+      if(prog.total){
+        spine.querySelector(".progress-fill").style.width = prog.pct + "%";
+      } else {
+        spine.querySelector(".progress-track").style.display = "none";
+      }
+      spine.addEventListener("click", function(e){
+        if(e.target.classList.contains("item-menu-btn")) return;
+        state.openUnitId = (state.openUnitId === unit.id) ? null : unit.id;
+        renderTree();
+      });
+      spine.querySelector(".edit-unit-btn").addEventListener("click", function(e){
+        e.stopPropagation();
+        openUnitModal(unit);
+      });
+      spine.querySelectorAll(".item-menu-btn")[1].addEventListener("click", function(e){
+        e.stopPropagation();
+        if(confirm('Delete unit "' + unit.title + '"? (You can undo for a few seconds after.)')){
+          var wasActive = findDay(unit, state.activeDayId);
+          var idx = data.units.indexOf(unit);
+          data.units = data.units.filter(function(u){ return u.id !== unit.id; });
+          if(wasActive) state.activeDayId = null;
+          if(state.openUnitId === unit.id) state.openUnitId = null;
+          persist(); renderTree(); renderMain();
+          showUndoToast('Deleted "' + unit.title + '"', function(){
+            data.units.splice(idx, 0, unit);
+            persist(); renderTree(); renderMain();
+          });
+        }
+      });
+      row.appendChild(spine);
+
+      var body = document.createElement("div");
+      body.className = "item-body";
+      unit.weeks.forEach(function(week){
+        var wg = document.createElement("div");
+        wg.className = "week-group";
+
+        var wlRow = document.createElement("div");
+        wlRow.className = "week-label-row";
+        var wl = document.createElement("div");
+        wl.className = "week-label";
+        wl.style.flex = "1";
+        wl.textContent = "Week " + week.number + (week.customLabel ? " — " + week.customLabel : "");
+        if(currentWeek === week.number){
+          var badge = document.createElement("span");
+          badge.className = "this-week-badge";
+          badge.textContent = "This week";
+          wl.appendChild(badge);
+        }
+        wlRow.appendChild(wl);
+        var weekEditBtn = document.createElement("button");
+        weekEditBtn.className = "week-edit-btn";
+        weekEditBtn.title = "Rename this week";
+        weekEditBtn.textContent = "✎";
+        weekEditBtn.addEventListener("click", function(){
+          var val = prompt('Custom label for Week ' + week.number + ' (e.g. "Reading break", leave blank to clear):', week.customLabel || "");
+          if(val !== null){
+            week.customLabel = val.trim();
+            persist(); renderTree();
+          }
+        });
+        wlRow.appendChild(weekEditBtn);
+        wg.appendChild(wlRow);
+
+        var visibleDays = week.days.filter(function(d){ return filterVal === "all" || d.assessment === filterVal; });
+        visibleDays.forEach(function(day){
+          var dayRow = document.createElement("div");
+          dayRow.className = "day-item-row";
+
+          var upBtn = document.createElement("button");
+          upBtn.className = "day-move-btn";
+          upBtn.title = "Move up";
+          upBtn.textContent = "▲";
+          upBtn.addEventListener("click", function(e){
+            e.stopPropagation();
+            var i = week.days.indexOf(day);
+            if(i > 0){
+              week.days.splice(i,1); week.days.splice(i-1,0,day);
+              persist(); renderTree();
+            }
+          });
+          dayRow.appendChild(upBtn);
+
+          var downBtn = document.createElement("button");
+          downBtn.className = "day-move-btn";
+          downBtn.title = "Move down";
+          downBtn.textContent = "▼";
+          downBtn.addEventListener("click", function(e){
+            e.stopPropagation();
+            var i = week.days.indexOf(day);
+            if(i < week.days.length - 1){
+              week.days.splice(i,1); week.days.splice(i+1,0,day);
+              persist(); renderTree();
+            }
+          });
+          dayRow.appendChild(downBtn);
+
+          var di = document.createElement("div");
+          di.className = "day-item" + (state.activeDayId === day.id ? " active" : "");
+          di.style.flex = "1";
+          di.innerHTML = '<span class="done-dot" style="visibility:' + (day.done ? "visible" : "hidden") + '"></span><span class="d-title"></span>';
+          di.querySelector(".d-title").textContent = (day.flagged ? "🚩 " : "") + day.label + (day.topic ? " — " + day.topic : "");
+          di.addEventListener("click", function(){
+            state.activeDayId = day.id;
+            renderTree(); renderMain();
+            if(isMobileViewport()) closeSidebar();
+          });
+          dayRow.appendChild(di);
+
+          var moveSelect = document.createElement("select");
+          moveSelect.className = "reading-link-select";
+          moveSelect.style.maxWidth = "60px";
+          moveSelect.title = "Move to another week";
+          moveSelect.innerHTML = '<option value="">Wk→</option>' + WEEK_NUMBERS.filter(function(n){ return n !== week.number; }).map(function(n){ return '<option value="' + n + '">' + n + '</option>'; }).join("");
+          moveSelect.addEventListener("click", function(e){ e.stopPropagation(); });
+          moveSelect.addEventListener("change", function(){
+            var targetNum = parseInt(moveSelect.value, 10);
+            if(!targetNum) return;
+            var targetWeek = unit.weeks.find(function(w){ return w.number === targetNum; });
+            week.days = week.days.filter(function(d){ return d.id !== day.id; });
+            targetWeek.days.push(day);
+            persist(); renderTree(); renderMain();
+          });
+          dayRow.appendChild(moveSelect);
+
+          wg.appendChild(dayRow);
+        });
+
+        var btnRow = document.createElement("div");
+        btnRow.style.display = "flex";
+        btnRow.style.flexWrap = "wrap";
+        btnRow.style.gap = "10px";
+        var addDayBtn = document.createElement("button");
+        addDayBtn.className = "add-day-btn";
+        addDayBtn.textContent = "+ Add day";
+        addDayBtn.addEventListener("click", function(){ openDayModal(unit.id, week.number); });
+        btnRow.appendChild(addDayBtn);
+        var bulkBtn = document.createElement("button");
+        bulkBtn.className = "add-day-btn";
+        bulkBtn.textContent = "Paste list";
+        bulkBtn.addEventListener("click", function(){ openBulkModal(unit.id, week.number); });
+        btnRow.appendChild(bulkBtn);
+        if(week.days.length){
+          var dupWeekBtn = document.createElement("button");
+          dupWeekBtn.className = "add-day-btn";
+          dupWeekBtn.textContent = "Copy week to…";
+          dupWeekBtn.addEventListener("click", function(){
+            var targetStr = prompt('Copy Week ' + week.number + '\'s days into which week number (1-6)?');
+            var targetNum = parseInt(targetStr, 10);
+            if(!targetNum || targetNum < 1 || targetNum > 6){ return; }
+            if(targetNum === week.number){ alert("Pick a different week to copy into."); return; }
+            var targetWeek = unit.weeks.find(function(w){ return w.number === targetNum; });
+            week.days.forEach(function(day){
+              var copy = JSON.parse(JSON.stringify(day));
+              copy.id = uid();
+              copy.done = false;
+              copy.updated = Date.now();
+              targetWeek.days.push(copy);
+            });
+            persist(); renderTree(); renderMain();
+          });
+          btnRow.appendChild(dupWeekBtn);
+        }
+        wg.appendChild(btnRow);
+        body.appendChild(wg);
+      });
+      row.appendChild(body);
+      treeEl.appendChild(row);
+    });
+  }
+
+  function renderLibraryTree(){
+    data.books.forEach(function(book){
+      var row = document.createElement("div");
+      row.className = "item-row" + (state.openBookId === book.id ? " open" : "");
+
+      var spine = document.createElement("div");
+      spine.className = "item-spine";
+      spine.style.setProperty("--spine-color", book.color || SPINE_COLORS[0]);
+      spine.innerHTML = '<span class="caret">▶</span><span class="titles"><div class="t1"></div><div class="t2"></div></span><button class="item-menu-btn edit-book-btn" title="Edit book">✎</button><button class="item-menu-btn" title="Delete book">✕</button>';
+      spine.querySelector(".t1").textContent = book.title;
+      spine.querySelector(".t2").textContent = book.author || "";
+      spine.addEventListener("click", function(e){
+        if(e.target.classList.contains("item-menu-btn")) return;
+        state.openBookId = (state.openBookId === book.id) ? null : book.id;
+        renderTree();
+      });
+      spine.querySelector(".edit-book-btn").addEventListener("click", function(e){
+        e.stopPropagation();
+        openBookModal(book);
+      });
+      spine.querySelectorAll(".item-menu-btn")[1].addEventListener("click", function(e){
+        e.stopPropagation();
+        if(confirm('Delete "' + book.title + '" and all its chapters? (Undo available for a few seconds after.)')){
+          var wasActive = findChapter(book, state.activeChapterId);
+          var idx = data.books.indexOf(book);
+          data.books = data.books.filter(function(b){ return b.id !== book.id; });
+          if(wasActive) state.activeChapterId = null;
+          if(state.openBookId === book.id) state.openBookId = null;
+          persist(); renderTree(); renderMain();
+          showUndoToast('Deleted "' + book.title + '"', function(){
+            data.books.splice(idx, 0, book);
+            persist(); renderTree(); renderMain();
+          });
+        }
+      });
+      row.appendChild(spine);
+
+      var body = document.createElement("div");
+      body.className = "item-body";
+      var filterVal = assessmentFilterSelect.value || "all";
+      var visibleChapters = book.chapters.filter(function(c){ return filterVal === "all" || c.assessment === filterVal; });
+      visibleChapters.forEach(function(ch){
+        var ci = document.createElement("div");
+        ci.className = "day-item" + (state.activeChapterId === ch.id ? " active" : "");
+        ci.innerHTML = '<span class="d-title"></span>';
+        ci.querySelector(".d-title").textContent = ch.title || "Untitled chapter";
+        ci.addEventListener("click", function(){
+          state.activeChapterId = ch.id;
+          renderTree(); renderMain();
+          if(isMobileViewport()) closeSidebar();
+        });
+        body.appendChild(ci);
+      });
+      var addChBtn = document.createElement("button");
+      addChBtn.className = "add-chapter-btn";
+      addChBtn.textContent = "+ Add chapter";
+      addChBtn.addEventListener("click", function(){ openChapterModal(book.id); });
+      body.appendChild(addChBtn);
+      row.appendChild(body);
+      treeEl.appendChild(row);
+    });
+  }
+
+  // ================= MAIN PANEL =================
+  function renderMain(){
+    if(state.mode === "planner") renderPlannerMain();
+    else if(state.mode === "library") renderLibraryMain();
+    else if(state.mode === "highlights") renderHighlightsView();
+    else renderDashboardView();
+  }
+
+  function scheduleSave(saveFn){
+    setSaveStatus("Saving…");
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function(){ saveFn(); persist(); setSaveStatus("Saved"); }, 500);
+  }
+  function setSaveStatus(text){
+    var el = document.getElementById("save-status");
+    if(el) el.textContent = text;
+  }
+
+  function renderPlannerMain(){
+    var ctx = activeDayCtx();
+    if(!ctx){
+      toolbarEl.style.display = "none";
+      emptyStateEl.style.display = "block";
+      sheetColEl.style.display = "none";
+      return;
+    }
+    toolbarEl.style.display = "block";
+    emptyStateEl.style.display = "none";
+    sheetColEl.style.display = "flex";
+
+    toolbarEl.innerHTML =
+      '<div class="breadcrumb"></div>' +
+      '<div class="title-row">' +
+        '<input type="text" class="main-title-input" id="topic-input" placeholder="Topic for this day">' +
+        '<button class="flag-toggle" id="flag-toggle">🚩 Revisit before exam</button>' +
+        '<button class="done-toggle" id="done-toggle">Mark day complete</button>' +
+        '<span class="save-status" id="save-status">Saved</span>' +
+      '</div>' +
+      '<div class="meta-row"><input type="text" class="tags-input" id="assessment-input" placeholder="Linked assessment, e.g. COU6503.3"></div>' +
+      '<div class="fmt-toolbar">' +
+        '<button data-cmd="bold" title="Bold"><b>B</b></button>' +
+        '<button data-cmd="italic" title="Italic"><i>I</i></button>' +
+        '<button data-cmd="underline" title="Underline"><u>U</u></button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button data-cmd="formatBlock" data-val="H2" class="wide">Heading</button>' +
+        '<button data-cmd="formatBlock" data-val="BLOCKQUOTE" class="wide">Quote</button>' +
+        '<button data-cmd="formatBlock" data-val="P" class="wide">Body</button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button data-cmd="insertUnorderedList">•</button>' +
+        '<button data-cmd="insertOrderedList">1.</button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button data-cmd="hiliteColor" data-val="#F5D98B">▧</button>' +
+        '<button data-cmd="removeFormat">✕</button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button class="wide" id="insert-image-btn">🖼 Image</button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button class="wide danger" id="delete-day-btn">Delete day</button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button class="wide" id="duplicate-day-btn">⧉ Duplicate</button>' +
+        '<button class="wide" id="print-day-btn">🖨 Print</button>' +
+      '</div>';
+
+    document.querySelector(".breadcrumb").textContent =
+      (ctx.unit.code ? ctx.unit.code + " — " : "") + ctx.unit.title + "  ·  Week " + ctx.week.number + "  ·  " + ctx.day.label;
+
+    var topicInput = document.getElementById("topic-input");
+    topicInput.value = ctx.day.topic || "";
+    topicInput.addEventListener("input", function(){
+      ctx.day.topic = topicInput.value;
+      scheduleSave(function(){ ctx.day.updated = Date.now(); });
+      renderTree();
+    });
+
+    var assessmentInput = document.getElementById("assessment-input");
+    assessmentInput.value = ctx.day.assessment || "";
+    assessmentInput.addEventListener("input", function(){
+      ctx.day.assessment = assessmentInput.value.trim();
+      scheduleSave(function(){ ctx.day.updated = Date.now(); });
+    });
+    assessmentInput.addEventListener("blur", function(){ populateAssessmentFilter(); });
+
+    var doneToggle = document.getElementById("done-toggle");
+    doneToggle.classList.toggle("on", !!ctx.day.done);
+    doneToggle.textContent = ctx.day.done ? "Day complete ✓" : "Mark day complete";
+    doneToggle.addEventListener("click", function(){
+      ctx.day.done = !ctx.day.done;
+      persist(); renderTree(); renderPlannerMain();
+    });
+
+    var flagToggle = document.getElementById("flag-toggle");
+    flagToggle.classList.toggle("on", !!ctx.day.flagged);
+    flagToggle.addEventListener("click", function(){
+      ctx.day.flagged = !ctx.day.flagged;
+      persist(); renderPlannerMain();
+    });
+
+    document.getElementById("print-day-btn").addEventListener("click", function(){ printDayCtx(ctx); });
+
+    document.getElementById("duplicate-day-btn").addEventListener("click", function(){
+      var idx = ctx.week.days.indexOf(ctx.day);
+      var copy = JSON.parse(JSON.stringify(ctx.day));
+      copy.id = uid();
+      copy.label = ctx.day.label + " (copy)";
+      copy.done = false;
+      copy.updated = Date.now();
+      ctx.week.days.splice(idx + 1, 0, copy);
+      state.activeDayId = copy.id;
+      persist(); renderTree(); renderMain();
+    });
+
+    document.getElementById("delete-day-btn").addEventListener("click", function(){
+      if(confirm('Delete "' + ctx.day.label + '"? (Undo available for a few seconds after.)')){
+        var idx = ctx.week.days.indexOf(ctx.day);
+        var weekRef = ctx.week;
+        ctx.week.days = ctx.week.days.filter(function(d){ return d.id !== ctx.day.id; });
+        state.activeDayId = null;
+        persist(); renderTree(); renderMain();
+        showUndoToast('Deleted "' + ctx.day.label + '"', function(){
+          weekRef.days.splice(idx, 0, ctx.day);
+          persist(); renderTree(); renderMain();
+        });
+      }
+    });
+
+    document.querySelectorAll(".fmt-toolbar button[data-cmd]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        if(activeEditable) activeEditable.focus();
+        document.execCommand(btn.getAttribute("data-cmd"), false, btn.getAttribute("data-val") || null);
+        if(activeEditable) activeEditable.dispatchEvent(new Event("input"));
+      });
+    });
+
+    // sheet cards: objectives, readings, source pages + notes (side by side), Q&A, reflection
+    sheetColEl.innerHTML =
+      '<div class="card" id="objectives-card">' +
+        '<h3>Learning Objectives</h3>' +
+        '<div id="objectives-list"></div>' +
+        '<button class="add-objective-btn" id="add-objective-btn">+ Add objective</button>' +
+      '</div>' +
+      '<div class="card" id="readings-card">' +
+        '<h3>Readings</h3>' +
+        '<div id="readings-list"></div>' +
+        '<button class="add-reading-btn" id="add-reading-btn">+ Add reading</button>' +
+      '</div>' +
+      '<div class="split-row">' +
+        '<div class="split-col">' +
+          '<div class="card source" style="flex:1; display:flex; flex-direction:column;">' +
+            '<h3><span>Source pages</span><input type="text" class="page-range-input" id="source-range-input" placeholder="pp. 6\u201310"></h3>' +
+            '<div class="rich-editable scrollable" id="source-area" contenteditable="true" data-placeholder="Paste the textbook pages you\u2019re working from here…"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="split-col">' +
+          '<div class="card" id="notes-card" style="flex:1; display:flex; flex-direction:column;">' +
+            '<h3><span>Notes</span><span class="word-count" id="notes-wc">0 words</span></h3>' +
+            '<div class="objective-tag-chips" id="objective-tag-chips"></div>' +
+            '<div class="rich-editable scrollable" id="notes-area" contenteditable="true" data-placeholder="What did the reading cover? Key concepts, models, terms…"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card" id="qa-card">' +
+        '<h3><span>Questions &amp; Answers</span></h3>' +
+        '<div id="qa-list"></div>' +
+        '<button class="add-qa-btn" id="add-qa-btn">+ Add a question</button>' +
+      '</div>' +
+      '<div class="card reflection" id="reflection-card">' +
+        '<h3><span>Reflection</span><span class="word-count" id="reflection-wc">0 words</span></h3>' +
+        '<div class="rich-editable" id="reflection-area" contenteditable="true" data-placeholder="How does this land for you? What connects to your own experience, questions it raises…"></div>' +
+      '</div>';
+
+    renderReadings(ctx);
+    renderQA(ctx.day, "qa-list", "add-qa-btn");
+    renderObjectives(ctx);
+
+    var sourceArea = document.getElementById("source-area");
+    sourceArea.innerHTML = ctx.day.sourceText || "";
+    sourceArea.addEventListener("focus", function(){ activeEditable = sourceArea; });
+    sourceArea.addEventListener("input", function(){
+      ctx.day.sourceText = sourceArea.innerHTML;
+      scheduleSave(function(){ ctx.day.updated = Date.now(); });
+    });
+    var sourceRangeInput = document.getElementById("source-range-input");
+    sourceRangeInput.value = ctx.day.sourceRange || "";
+    sourceRangeInput.addEventListener("input", function(){
+      ctx.day.sourceRange = sourceRangeInput.value;
+      scheduleSave(function(){ ctx.day.updated = Date.now(); });
+    });
+
+    var notesArea = document.getElementById("notes-area");
+    notesArea.innerHTML = ctx.day.notes || "";
+    document.getElementById("notes-wc").textContent = countWords(notesArea.innerHTML) + " words";
+    notesArea.addEventListener("focus", function(){ activeEditable = notesArea; });
+    notesArea.addEventListener("input", function(){
+      ctx.day.notes = notesArea.innerHTML;
+      document.getElementById("notes-wc").textContent = countWords(notesArea.innerHTML) + " words";
+      scheduleSave(function(){ ctx.day.updated = Date.now(); });
+    });
+
+    var reflectionArea = document.getElementById("reflection-area");
+    reflectionArea.innerHTML = ctx.day.reflection || "";
+    document.getElementById("reflection-wc").textContent = countWords(reflectionArea.innerHTML) + " words";
+    reflectionArea.addEventListener("focus", function(){ activeEditable = reflectionArea; });
+    reflectionArea.addEventListener("input", function(){
+      ctx.day.reflection = reflectionArea.innerHTML;
+      document.getElementById("reflection-wc").textContent = countWords(reflectionArea.innerHTML) + " words";
+      scheduleSave(function(){ ctx.day.updated = Date.now(); });
+    });
+
+    activeEditable = notesArea;
+  }
+
+  function buildChapterOptionsHtml(selectedId){
+    var html = '<option value="">Link to chapter…</option>';
+    data.books.forEach(function(book){
+      if(!book.chapters.length) return;
+      html += '<optgroup label="' + escapeHtml(book.title) + '">';
+      book.chapters.forEach(function(ch){
+        html += '<option value="' + ch.id + '"' + (ch.id === selectedId ? " selected" : "") + '>' + escapeHtml(ch.title || "Untitled") + '</option>';
+      });
+      html += '</optgroup>';
+    });
+    return html;
+  }
+
+  function renderReadings(ctx){
+    var listEl = document.getElementById("readings-list");
+    listEl.innerHTML = "";
+    (ctx.day.readings || []).forEach(function(reading){
+      var row = document.createElement("div");
+      row.className = "reading-row";
+      row.innerHTML =
+        '<input type="checkbox" ' + (reading.done ? "checked" : "") + '>' +
+        '<input type="text" placeholder="e.g. Corey, Ch. 4 — pp. 88–102">' +
+        '<select class="reading-link-select">' + buildChapterOptionsHtml(reading.chapterId) + '</select>' +
+        (reading.chapterId ? '<button class="reading-open-btn" title="Open linked chapter">Open →</button>' : '') +
+        '<button class="remove-reading" title="Remove">✕</button>';
+      var checkbox = row.querySelector('input[type=checkbox]');
+      var textInput = row.querySelector('input[type=text]');
+      var linkSelect = row.querySelector('.reading-link-select');
+      textInput.value = reading.text || "";
+      checkbox.addEventListener("change", function(){
+        reading.done = checkbox.checked;
+        persist();
+      });
+      textInput.addEventListener("input", function(){
+        reading.text = textInput.value;
+        scheduleSave(function(){ ctx.day.updated = Date.now(); });
+      });
+      linkSelect.addEventListener("change", function(){
+        reading.chapterId = linkSelect.value || null;
+        persist();
+        renderReadings(ctx);
+      });
+      var openBtn = row.querySelector('.reading-open-btn');
+      if(openBtn){
+        openBtn.addEventListener("click", function(){
+          var found = findBookForChapterId(reading.chapterId);
+          if(!found){ alert("That linked chapter no longer exists."); return; }
+          setMode("library");
+          state.openBookId = found.book.id;
+          state.activeChapterId = found.chapter.id;
+          renderTree(); renderMain();
+        });
+      }
+      row.querySelector(".remove-reading").addEventListener("click", function(){
+        ctx.day.readings = ctx.day.readings.filter(function(r){ return r.id !== reading.id; });
+        persist();
+        renderReadings(ctx);
+      });
+      listEl.appendChild(row);
+    });
+  }
+
+  function renderObjectives(ctx){
+    ctx.day.objectives = ctx.day.objectives || [];
+    ctx.day.objectives.forEach(function(obj, i){
+      if(!obj.color) obj.color = OBJECTIVE_COLORS[i % OBJECTIVE_COLORS.length];
+    });
+    var listEl = document.getElementById("objectives-list");
+    listEl.innerHTML = "";
+    ctx.day.objectives.forEach(function(obj){
+      var row = document.createElement("div");
+      row.className = "objective-row";
+      row.innerHTML =
+        '<span class="obj-color-dot" style="background:' + obj.color + '" title="Tag colour for this objective"></span>' +
+        '<input type="text" placeholder="e.g. Evaluate ethical frameworks for managing dual relationships">' +
+        '<button class="remove-objective" title="Remove">✕</button>';
+      var textInput = row.querySelector('input[type=text]');
+      textInput.value = obj.text || "";
+      textInput.addEventListener("input", function(){
+        obj.text = textInput.value;
+        scheduleSave(function(){ ctx.day.updated = Date.now(); });
+        renderObjectiveTagChips(ctx);
+      });
+      row.querySelector(".remove-objective").addEventListener("click", function(){
+        ctx.day.objectives = ctx.day.objectives.filter(function(o){ return o.id !== obj.id; });
+        persist();
+        renderObjectives(ctx);
+      });
+      listEl.appendChild(row);
+    });
+    renderObjectiveTagChips(ctx);
+  }
+
+  function renderObjectiveTagChips(ctx){
+    var chipsEl = document.getElementById("objective-tag-chips");
+    if(!chipsEl) return;
+    chipsEl.innerHTML = "";
+    var objectives = ctx.day.objectives || [];
+    if(!objectives.length) return;
+    var hint = document.createElement("div");
+    hint.className = "obj-tag-hint";
+    hint.textContent = "Select text above, then click an objective to highlight it in that colour:";
+    chipsEl.appendChild(hint);
+    objectives.forEach(function(obj, i){
+      var chip = document.createElement("button");
+      chip.className = "obj-tag-chip";
+      chip.style.background = obj.color;
+      chip.textContent = obj.text ? obj.text : ("Objective " + (i+1));
+      chip.title = "Tag the selected notes text with this objective";
+      chip.addEventListener("click", function(){ tagSelectionWithObjective(obj); });
+      chipsEl.appendChild(chip);
+    });
+  }
+
+  function tagSelectionWithObjective(obj){
+    var sel = window.getSelection();
+    if(!sel || !sel.rangeCount || sel.isCollapsed){
+      alert("Select some text in your notes first, then click the objective you want to tag it with.");
+      return;
+    }
+    var range = sel.getRangeAt(0);
+    var notesArea = document.getElementById("notes-area");
+    if(!notesArea || !notesArea.contains(range.commonAncestorContainer)){
+      alert("Select text inside the Notes box first, then click the objective.");
+      return;
+    }
+    var span = document.createElement("span");
+    span.style.backgroundColor = obj.color;
+    span.setAttribute("data-obj-id", obj.id);
+    try{
+      range.surroundContents(span);
+    }catch(e){
+      var frag = range.extractContents();
+      span.appendChild(frag);
+      range.insertNode(span);
+    }
+    sel.removeAllRanges();
+    notesArea.dispatchEvent(new Event("input"));
+  }
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "add-objective-btn"){
+      var ctx = activeDayCtx();
+      if(!ctx) return;
+      ctx.day.objectives = ctx.day.objectives || [];
+      ctx.day.objectives.push({id:uid(), text:"", color: OBJECTIVE_COLORS[ctx.day.objectives.length % OBJECTIVE_COLORS.length]});
+      persist();
+      renderObjectives(ctx);
+      var inputs = document.getElementById("objectives-list").querySelectorAll("input[type=text]");
+      if(inputs.length) inputs[inputs.length-1].focus();
+    }
+  });
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "add-reading-btn"){
+      var ctx = activeDayCtx();
+      if(!ctx) return;
+      ctx.day.readings = ctx.day.readings || [];
+      ctx.day.readings.push({id:uid(), text:"", done:false});
+      persist();
+      renderReadings(ctx);
+    }
+  });
+
+  function renderLibraryMain(){
+    var ctx = activeChapterCtx();
+    if(!ctx){
+      toolbarEl.style.display = "none";
+      emptyStateEl.style.display = "block";
+      sheetColEl.style.display = "none";
+      return;
+    }
+    toolbarEl.style.display = "block";
+    emptyStateEl.style.display = "none";
+    sheetColEl.style.display = "flex";
+
+    toolbarEl.innerHTML =
+      '<div class="breadcrumb"></div>' +
+      '<div class="title-row">' +
+        '<input type="text" class="main-title-input" id="chapter-title-input" placeholder="Chapter title">' +
+        '<button class="flag-toggle" id="flag-toggle">🚩 Revisit before exam</button>' +
+        '<button class="done-toggle" id="copy-citation-btn" style="border-radius:6px;">Copy in-text citation</button>' +
+        '<span class="save-status" id="save-status">Saved</span>' +
+      '</div>' +
+      '<div class="meta-row"><input type="text" class="tags-input" id="tags-input" placeholder="tags, e.g. person-centred, Rogers"><input type="text" class="tags-input" id="assessment-input" style="max-width:180px;" placeholder="Linked assessment, e.g. COU6503.3"></div>' +
+      '<div class="fmt-toolbar">' +
+        '<button data-cmd="bold" title="Bold"><b>B</b></button>' +
+        '<button data-cmd="italic" title="Italic"><i>I</i></button>' +
+        '<button data-cmd="underline" title="Underline"><u>U</u></button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button data-cmd="formatBlock" data-val="H2" class="wide">Heading</button>' +
+        '<button data-cmd="formatBlock" data-val="BLOCKQUOTE" class="wide">Quote</button>' +
+        '<button data-cmd="formatBlock" data-val="P" class="wide">Body</button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button data-cmd="insertUnorderedList">•</button>' +
+        '<button data-cmd="insertOrderedList">1.</button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button data-cmd="hiliteColor" data-val="#F5D98B">▧</button>' +
+        '<button data-cmd="removeFormat">✕</button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button class="wide" id="insert-image-btn">🖼 Image</button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button class="wide danger" id="delete-chapter-btn">Delete chapter</button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button class="wide" id="print-chapter-btn">🖨 Print</button>' +
+      '</div>';
+
+    document.querySelector(".breadcrumb").textContent = ctx.book.title;
+
+    var titleInput = document.getElementById("chapter-title-input");
+    titleInput.value = ctx.chapter.title || "";
+    titleInput.addEventListener("input", function(){
+      ctx.chapter.title = titleInput.value;
+      scheduleSave(function(){ ctx.chapter.updated = Date.now(); });
+      renderTree();
+    });
+
+    var tagsInput = document.getElementById("tags-input");
+    tagsInput.value = (ctx.chapter.tags || []).join(", ");
+    tagsInput.addEventListener("input", function(){
+      ctx.chapter.tags = tagsInput.value.split(",").map(function(t){return t.trim();}).filter(Boolean);
+      scheduleSave(function(){ ctx.chapter.updated = Date.now(); });
+    });
+
+    var assessmentInput = document.getElementById("assessment-input");
+    assessmentInput.value = ctx.chapter.assessment || "";
+    assessmentInput.addEventListener("input", function(){
+      ctx.chapter.assessment = assessmentInput.value.trim();
+      scheduleSave(function(){ ctx.chapter.updated = Date.now(); });
+    });
+    assessmentInput.addEventListener("blur", function(){ populateAssessmentFilter(); });
+
+    document.getElementById("delete-chapter-btn").addEventListener("click", function(){
+      if(confirm('Delete chapter "' + (ctx.chapter.title || "Untitled") + '"? (Undo available for a few seconds after.)')){
+        var idx = ctx.book.chapters.indexOf(ctx.chapter);
+        var bookRef = ctx.book;
+        ctx.book.chapters = ctx.book.chapters.filter(function(c){ return c.id !== ctx.chapter.id; });
+        state.activeChapterId = null;
+        persist(); renderTree(); renderMain();
+        showUndoToast('Deleted "' + (ctx.chapter.title || "chapter") + '"', function(){
+          bookRef.chapters.splice(idx, 0, ctx.chapter);
+          persist(); renderTree(); renderMain();
+        });
+      }
+    });
+
+    var chapterFlagToggle = document.getElementById("flag-toggle");
+    chapterFlagToggle.classList.toggle("on", !!ctx.chapter.flagged);
+    chapterFlagToggle.addEventListener("click", function(){
+      ctx.chapter.flagged = !ctx.chapter.flagged;
+      persist(); renderLibraryMain();
+    });
+
+    document.getElementById("copy-citation-btn").addEventListener("click", function(){
+      var text = ctx.book.inTextCitation || ctx.book.author || "";
+      if(!text){ alert("Add an in-text citation for this book first (edit the book with the ✎ button)."); return; }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){
+          setSaveStatus("Citation copied");
+          setTimeout(function(){ setSaveStatus("Saved"); }, 1500);
+        }).catch(function(){ prompt("Copy this citation:", text); });
+      } else {
+        prompt("Copy this citation:", text);
+      }
+    });
+
+    document.getElementById("print-chapter-btn").addEventListener("click", function(){ printChapterCtx(ctx); });
+
+    document.querySelectorAll(".fmt-toolbar button[data-cmd]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        if(activeEditable) activeEditable.focus();
+        document.execCommand(btn.getAttribute("data-cmd"), false, btn.getAttribute("data-val") || null);
+        if(activeEditable) activeEditable.dispatchEvent(new Event("input"));
+      });
+    });
+
+    sheetColEl.innerHTML =
+      '<div class="split-row">' +
+        '<div class="split-col">' +
+          '<div class="card source" style="flex:1; display:flex; flex-direction:column;">' +
+            '<h3><span>Source pages</span><input type="text" class="page-range-input" id="source-range-input" placeholder="pp. 1\u201320"></h3>' +
+            '<div class="rich-editable scrollable" id="source-area" contenteditable="true" data-placeholder="Paste the chapter pages here…"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="split-col">' +
+          '<div class="card" id="notes-card" style="flex:1; display:flex; flex-direction:column;">' +
+            '<h3><span>Chapter notes</span><span class="word-count" id="notes-wc">0 words</span></h3>' +
+            '<div class="rich-editable scrollable" id="notes-area" contenteditable="true" data-placeholder="Start writing…"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card" id="qa-card">' +
+        '<h3><span>Questions &amp; Answers</span></h3>' +
+        '<div id="qa-list-chapter"></div>' +
+        '<button class="add-qa-btn" id="add-qa-btn-chapter">+ Add a question</button>' +
+      '</div>';
+
+    var sourceArea = document.getElementById("source-area");
+    sourceArea.innerHTML = ctx.chapter.sourceText || "";
+    sourceArea.addEventListener("focus", function(){ activeEditable = sourceArea; });
+    sourceArea.addEventListener("input", function(){
+      ctx.chapter.sourceText = sourceArea.innerHTML;
+      scheduleSave(function(){ ctx.chapter.updated = Date.now(); });
+    });
+    var sourceRangeInput = document.getElementById("source-range-input");
+    sourceRangeInput.value = ctx.chapter.sourceRange || "";
+    sourceRangeInput.addEventListener("input", function(){
+      ctx.chapter.sourceRange = sourceRangeInput.value;
+      scheduleSave(function(){ ctx.chapter.updated = Date.now(); });
+    });
+
+    var notesArea = document.getElementById("notes-area");
+    notesArea.innerHTML = ctx.chapter.notes || "";
+    document.getElementById("notes-wc").textContent = countWords(notesArea.innerHTML) + " words";
+    notesArea.addEventListener("focus", function(){ activeEditable = notesArea; });
+    notesArea.addEventListener("input", function(){
+      ctx.chapter.notes = notesArea.innerHTML;
+      document.getElementById("notes-wc").textContent = countWords(notesArea.innerHTML) + " words";
+      scheduleSave(function(){ ctx.chapter.updated = Date.now(); });
+    });
+    activeEditable = notesArea;
+    renderQA(ctx.chapter, "qa-list-chapter", "add-qa-btn-chapter");
+  }
+
+  // ================= HIGHLIGHTS ROLLUP =================
+  function extractHighlights(html){
+    if(!html) return [];
+    var tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    var els = tmp.querySelectorAll('[style]');
+    var results = [];
+    els.forEach(function(el){
+      var bg = el.style.backgroundColor;
+      if(bg && bg !== "" && bg !== "transparent" && bg !== "rgba(0, 0, 0, 0)"){
+        var text = el.textContent.trim();
+        if(text) results.push({ text:text, objId: el.getAttribute("data-obj-id") || null });
+      }
+    });
+    return results;
+  }
+
+  function renderHighlightsView(){
+    toolbarEl.style.display = "none";
+    emptyStateEl.style.display = "none";
+    sheetColEl.style.display = "flex";
+    sheetColEl.innerHTML = "";
+
+    var filterRow = document.createElement("label");
+    filterRow.style.fontFamily = "system-ui, sans-serif";
+    filterRow.style.fontSize = "12px";
+    filterRow.style.color = "var(--ink-soft)";
+    filterRow.style.display = "flex";
+    filterRow.style.alignItems = "center";
+    filterRow.style.gap = "6px";
+    filterRow.innerHTML = '<input type="checkbox" id="flagged-only-checkbox"> Only show items flagged 🚩 "Revisit before exam"';
+    sheetColEl.appendChild(filterRow);
+    var flaggedCheckbox = filterRow.querySelector("#flagged-only-checkbox");
+    flaggedCheckbox.checked = state.highlightsFlaggedOnly;
+    flaggedCheckbox.addEventListener("change", function(){
+      state.highlightsFlaggedOnly = flaggedCheckbox.checked;
+      renderHighlightsView();
+    });
+
+    var cards = [];
+    data.units.forEach(function(unit){
+      unit.weeks.forEach(function(week){
+        week.days.forEach(function(day){
+          if(state.highlightsFlaggedOnly && !day.flagged) return;
+          [["Notes", day.notes], ["Reflection", day.reflection], ["Source pages", day.sourceText]].forEach(function(pair){
+            extractHighlights(pair[1]).forEach(function(h){
+              var objLabel = "";
+              if(h.objId && day.objectives){
+                var matchedObj = day.objectives.find(function(o){ return o.id === h.objId; });
+                if(matchedObj) objLabel = " — tied to: " + (matchedObj.text || "objective");
+              }
+              cards.push({
+                quote: h.text,
+                path: (unit.code ? unit.code + " — " : "") + unit.title + " · Week " + week.number + " · " + day.label + " · " + pair[0] + objLabel + (day.flagged ? " 🚩" : "")
+              , go: function(){ setMode("planner"); state.openUnitId = unit.id; state.activeDayId = day.id; renderTree(); renderMain(); }
+              });
+            });
+          });
+        });
+      });
+    });
+    data.books.forEach(function(book){
+      book.chapters.forEach(function(ch){
+        if(state.highlightsFlaggedOnly && !ch.flagged) return;
+        [["Chapter notes", ch.notes], ["Source pages", ch.sourceText]].forEach(function(pair){
+          extractHighlights(pair[1]).forEach(function(h){
+            cards.push({
+              quote: h.text,
+              path: book.title + " · " + (ch.title || "Untitled") + " · " + pair[0] + (ch.flagged ? " 🚩" : ""),
+              go: function(){ setMode("library"); state.openBookId = book.id; state.activeChapterId = ch.id; renderTree(); renderMain(); }
+            });
+          });
+        });
+      });
+    });
+
+    if(!cards.length){
+      var msg = document.createElement("div");
+      msg.className = "empty-state";
+      msg.style.marginTop = "40px";
+      msg.innerHTML = state.highlightsFlaggedOnly
+        ? '<h2>No flagged highlights</h2><p>Flag a day or chapter with 🚩 "Revisit before exam" and highlight some text in it to see it here.</p>'
+        : '<h2>No highlights yet</h2><p>Use the highlight button (▧) in the formatting toolbar while writing notes, reflections or source pages — anything you mark that way collects here in one place.</p>';
+      sheetColEl.appendChild(msg);
+      return;
+    }
+
+    var header = document.createElement("div");
+    header.style.fontFamily = "system-ui, sans-serif";
+    header.style.fontSize = "12px";
+    header.style.color = "var(--ink-soft)";
+    header.textContent = cards.length + " highlighted passage" + (cards.length === 1 ? "" : "s");
+    sheetColEl.appendChild(header);
+
+    cards.forEach(function(card){
+      var div = document.createElement("div");
+      div.className = "highlight-card";
+      div.innerHTML = '<div class="h-path"><span></span><button class="h-jump">Open →</button></div><div class="h-quote"></div>';
+      div.querySelector(".h-path span").textContent = card.path;
+      div.querySelector(".h-quote").textContent = card.quote;
+      div.querySelector(".h-jump").addEventListener("click", card.go);
+      sheetColEl.appendChild(div);
+    });
+  }
+
+  // ================= DASHBOARD =================
+  function renderDashboardView(){
+    toolbarEl.style.display = "none";
+    emptyStateEl.style.display = "none";
+    sheetColEl.style.display = "flex";
+    sheetColEl.innerHTML = "";
+
+    var heatmapCard = document.createElement("div");
+    heatmapCard.className = "dash-card";
+    heatmapCard.style.borderLeftColor = "var(--sage)";
+    var hmTitle = document.createElement("h3");
+    hmTitle.textContent = "Your activity";
+    heatmapCard.appendChild(hmTitle);
+    renderActivityHeatmap(heatmapCard);
+    sheetColEl.appendChild(heatmapCard);
+
+    if(!data.units.length){
+      sheetColEl.innerHTML += '<div class="empty-state" style="margin-top:60px;"><h2>No units yet</h2><p>Switch to the Planner tab and add your first unit to see it here.</p></div>';
+    }
+
+    data.units.forEach(function(unit){
+      var prog = unitProgress(unit);
+      var currentWeek = computeCurrentWeekNumber(unit);
+      var next = findNextIncompleteDay(unit);
+      var wordCount = unitWordCount(unit);
+
+      var card = document.createElement("div");
+      card.className = "dash-card";
+      card.style.setProperty("--spine-color", unit.color || SPINE_COLORS[0]);
+
+      var html = '<h3>' + escapeHtml(unit.code ? (unit.code + " — " + unit.title) : unit.title) + '</h3>';
+      html += '<div class="dash-sub">' + (currentWeek ? ("Week " + currentWeek + " of 6") : "No start date set") +
+        (prog.total ? (" · " + prog.done + "/" + prog.total + " days complete (" + prog.pct + "%)") : " · no days added yet") +
+        (wordCount ? (" · " + wordCount + " words written") : "") + '</div>';
+      if(prog.total){
+        html += '<div class="progress-track"><div class="progress-fill" style="width:' + prog.pct + '%"></div></div>';
+      }
+      card.innerHTML = html;
+
+      if(next){
+        var nextBtn = document.createElement("div");
+        nextBtn.className = "dash-next";
+        nextBtn.textContent = "Next up: Week " + next.week.number + " · " + next.day.label + (next.day.topic ? " — " + next.day.topic : "") + "  →";
+        nextBtn.addEventListener("click", function(){
+          setMode("planner");
+          state.openUnitId = unit.id;
+          state.activeDayId = next.day.id;
+          renderTree(); renderMain();
+        });
+        card.appendChild(nextBtn);
+      }
+
+      var actions = document.createElement("div");
+      actions.className = "dash-actions";
+      var openBtn = document.createElement("button");
+      openBtn.textContent = "Open in Planner";
+      openBtn.addEventListener("click", function(){
+        setMode("planner");
+        state.openUnitId = unit.id;
+        renderTree(); renderMain();
+      });
+      actions.appendChild(openBtn);
+
+      var printBtn = document.createElement("button");
+      printBtn.textContent = "Print unit";
+      printBtn.addEventListener("click", function(){ printUnit(unit); });
+      actions.appendChild(printBtn);
+
+      var exportBtn2 = document.createElement("button");
+      exportBtn2.textContent = "Export reflections (.doc)";
+      exportBtn2.addEventListener("click", function(){ exportUnitToDoc(unit); });
+      actions.appendChild(exportBtn2);
+
+      card.appendChild(actions);
+      sheetColEl.appendChild(card);
+    });
+
+    // quick captures section
+    var captures = data.quickCaptures || [];
+    if(captures.length){
+      var header = document.createElement("div");
+      header.style.fontFamily = "system-ui, sans-serif";
+      header.style.fontSize = "12px";
+      header.style.color = "var(--ink-soft)";
+      header.style.marginTop = "6px";
+      header.textContent = "Quick captures — sort these into the right spot when you get a chance";
+      sheetColEl.appendChild(header);
+
+      captures.forEach(function(cap){
+        var item = document.createElement("div");
+        item.className = "quick-capture-item";
+        item.innerHTML = '<span></span><button class="qc-remove" title="Delete">✕</button>';
+        item.querySelector("span").textContent = cap.text;
+        item.querySelector(".qc-remove").addEventListener("click", function(){
+          data.quickCaptures = data.quickCaptures.filter(function(c){ return c.id !== cap.id; });
+          persist();
+          renderMain();
+        });
+        sheetColEl.appendChild(item);
+      });
+    }
+  }
+
+  // ================= PRINT =================
+  function escapePrint(s){ return escapeHtml(String(s || "")); }
+  function openPrintArea(innerHtml){
+    printAreaEl.innerHTML = innerHtml;
+    window.print();
+  }
+  function printDayCtx(ctx){
+    var html = '<h1>' + escapePrint(ctx.day.topic || ctx.day.label) + '</h1>';
+    html += '<div class="print-meta">' + escapePrint((ctx.unit.code ? ctx.unit.code + " — " : "") + ctx.unit.title + " · Week " + ctx.week.number + " · " + ctx.day.label) + '</div>';
+    if(ctx.day.objectives && ctx.day.objectives.length){
+      html += '<h2>Learning Objectives</h2><div class="print-block">' + ctx.day.objectives.map(function(o){ return "• " + escapePrint(o.text); }).join("<br>") + '</div>';
+    }
+    if(ctx.day.readings && ctx.day.readings.length){
+      html += '<h2>Readings</h2><div class="print-block">' + ctx.day.readings.map(function(r){ return escapePrint(r.text); }).join("<br>") + '</div>';
+    }
+    html += '<h2>Notes</h2><div class="print-block">' + (ctx.day.notes || "<em>(none)</em>") + '</div>';
+    if(ctx.day.qa && ctx.day.qa.length){
+      html += '<h2>Questions &amp; Answers</h2><div class="print-block">' + ctx.day.qa.map(function(q){ return "<b>Q:</b> " + escapePrint(q.question) + "<br><b>A:</b> " + escapePrint(q.answer); }).join("<br><br>") + '</div>';
+    }
+    html += '<h2>Reflection</h2><div class="print-block">' + (ctx.day.reflection || "<em>(none)</em>") + '</div>';
+    openPrintArea(html);
+  }
+  function printChapterCtx(ctx){
+    var html = '<h1>' + escapePrint(ctx.chapter.title) + '</h1>';
+    html += '<div class="print-meta">' + escapePrint(ctx.book.title) + '</div>';
+    html += '<h2>Chapter notes</h2><div class="print-block">' + (ctx.chapter.notes || "<em>(none)</em>") + '</div>';
+    openPrintArea(html);
+  }
+  function printUnit(unit){
+    var html = '<h1>' + escapePrint(unit.code ? (unit.code + " — " + unit.title) : unit.title) + '</h1>';
+    unit.weeks.forEach(function(week){
+      if(!week.days.length) return;
+      html += '<h2 style="margin-top:24px; border-bottom:1px solid #ccc;">Week ' + week.number + '</h2>';
+      week.days.forEach(function(day){
+        html += '<div class="print-block"><b>' + escapePrint(day.label + (day.topic ? " — " + day.topic : "")) + '</b>';
+        if(day.notes) html += '<div style="margin-top:4px;">' + day.notes + '</div>';
+        if(day.reflection) html += '<div style="margin-top:6px; font-style:italic;">' + day.reflection + '</div>';
+        html += '</div>';
+      });
+    });
+    openPrintArea(html);
+  }
+
+  // ================= WORD EXPORT =================
+  function exportUnitToDoc(unit){
+    var body = '<h1>' + escapePrint(unit.code ? (unit.code + " — " + unit.title) : unit.title) + '</h1>';
+    body += '<p><i>Reflections export</i></p>';
+    var any = false;
+    unit.weeks.forEach(function(week){
+      week.days.forEach(function(day){
+        if(!day.reflection) return;
+        any = true;
+        body += '<h2>Week ' + week.number + ' — ' + escapePrint(day.label + (day.topic ? " — " + day.topic : "")) + '</h2>';
+        body += day.reflection;
+      });
+    });
+    if(!any) body += '<p>(No reflections written yet for this unit.)</p>';
+    var doc = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
+      '<head><meta charset="utf-8"><title>Export</title></head><body style="font-family: Calibri, Arial, sans-serif; font-size:12pt;">' + body + '</body></html>';
+    var blob = new Blob(['\ufeff', doc], { type: 'application/msword' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = (unit.code || unit.title || "unit").replace(/[^\w.-]+/g, "_") + "-reflections.doc";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ================= UNIT MODAL =================
+  function pickUnitSwatch(c){
+    selectedUnitSwatch = c;
+    renderSwatchPicker(unitSwatchesEl, selectedUnitSwatch, pickUnitSwatch);
+  }
+  function openUnitModal(existingUnit){
+    editingUnitId = existingUnit ? existingUnit.id : null;
+    unitModalHeading.textContent = existingUnit ? "Edit unit" : "Add a unit";
+    unitCodeInput.value = existingUnit ? (existingUnit.code || "") : "";
+    unitTitleInput.value = existingUnit ? (existingUnit.title || "") : "";
+    unitStartDateInput.value = existingUnit ? (existingUnit.startDate || "") : "";
+    selectedUnitSwatch = existingUnit ? (existingUnit.color || SPINE_COLORS[0]) : SPINE_COLORS[data.units.length % SPINE_COLORS.length];
+    renderSwatchPicker(unitSwatchesEl, selectedUnitSwatch, pickUnitSwatch);
+    unitModalBackdrop.classList.add("show");
+    setTimeout(function(){ unitCodeInput.focus(); }, 30);
+  }
+  unitCancelBtn.addEventListener("click", function(){ unitModalBackdrop.classList.remove("show"); });
+  unitSaveBtn.addEventListener("click", function(){
+    var title = unitTitleInput.value.trim();
+    var code = unitCodeInput.value.trim();
+    if(!title && !code){ unitTitleInput.focus(); return; }
+    var startDate = unitStartDateInput.value || null;
+    if(editingUnitId){
+      var existing = findUnit(editingUnitId);
+      existing.code = code;
+      existing.title = title || code;
+      existing.startDate = startDate;
+      existing.color = selectedUnitSwatch;
+      persist();
+      unitModalBackdrop.classList.remove("show");
+      renderTree(); renderMain();
+    } else {
+      var unit = { id:uid(), code:code, title: title || code, color:selectedUnitSwatch, startDate: startDate, weeks: emptyWeeks() };
+      data.units.push(unit);
+      persist();
+      unitModalBackdrop.classList.remove("show");
+      state.openUnitId = unit.id;
+      renderTree();
+    }
+  });
+
+  // ================= DAY MODAL =================
+  function openDayModal(unitId, weekNumber){
+    dayModalUnitId = unitId; dayModalWeekNumber = weekNumber;
+    var unit = findUnit(unitId);
+    var week = unit.weeks.find(function(w){ return w.number === weekNumber; });
+    dayModalHeading.textContent = "Add a day — Week " + weekNumber;
+    dayLabelInput.value = "Day " + (week.days.length + 1);
+    quickDaysEl.innerHTML = "";
+    ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].forEach(function(name){
+      var b = document.createElement("button");
+      b.textContent = name;
+      b.addEventListener("click", function(){ dayLabelInput.value = name; });
+      quickDaysEl.appendChild(b);
+    });
+    dayModalBackdrop.classList.add("show");
+    setTimeout(function(){ dayLabelInput.focus(); dayLabelInput.select(); }, 30);
+  }
+  dayCancelBtn.addEventListener("click", function(){ dayModalBackdrop.classList.remove("show"); });
+  daySaveBtn.addEventListener("click", function(){
+    var label = dayLabelInput.value.trim();
+    if(!label){ dayLabelInput.focus(); return; }
+    var unit = findUnit(dayModalUnitId);
+    var week = unit.weeks.find(function(w){ return w.number === dayModalWeekNumber; });
+    var day = { id:uid(), label:label, topic:"", readings:[], sourceText:"", sourceRange:"", notes:"", reflection:"", done:false, updated:Date.now() };
+    week.days.push(day);
+    state.openUnitId = unit.id;
+    state.activeDayId = day.id;
+    persist();
+    dayModalBackdrop.classList.remove("show");
+    renderTree(); renderMain();
+  });
+
+  // ================= BULK ADD MODAL =================
+  function openBulkModal(unitId, weekNumber){
+    bulkModalUnitId = unitId; bulkModalWeekNumber = weekNumber;
+    bulkModalHeading.textContent = "Paste a list of topics — Week " + weekNumber;
+    bulkTextarea.value = "";
+    bulkModalBackdrop.classList.add("show");
+    setTimeout(function(){ bulkTextarea.focus(); }, 30);
+  }
+  bulkCancelBtn.addEventListener("click", function(){ bulkModalBackdrop.classList.remove("show"); });
+  bulkSaveBtn.addEventListener("click", function(){
+    var lines = parseBulkLines(bulkTextarea.value);
+    if(!lines.length){ bulkTextarea.focus(); return; }
+    var unit = findUnit(bulkModalUnitId);
+    var week = unit.weeks.find(function(w){ return w.number === bulkModalWeekNumber; });
+    var firstNewDay = null;
+    lines.forEach(function(line){
+      var day = { id:uid(), label:line, topic:"", readings:[], sourceText:"", sourceRange:"", notes:"", reflection:"", done:false, updated:Date.now() };
+      week.days.push(day);
+      if(!firstNewDay) firstNewDay = day;
+    });
+    state.openUnitId = unit.id;
+    if(firstNewDay) state.activeDayId = firstNewDay.id;
+    persist();
+    bulkModalBackdrop.classList.remove("show");
+    renderTree(); renderMain();
+  });
+
+  // ================= BOOK MODAL =================
+  function pickBookSwatch(c){
+    selectedBookSwatch = c;
+    renderSwatchPicker(bookSwatchesEl, selectedBookSwatch, pickBookSwatch);
+  }
+  function openBookModal(existingBook){
+    editingBookId = existingBook ? existingBook.id : null;
+    bookModalHeading.textContent = existingBook ? "Edit book" : "Add a book";
+    bookTitleInput.value = existingBook ? (existingBook.title || "") : "";
+    bookAuthorInput.value = existingBook ? (existingBook.author || "") : "";
+    bookFullrefInput.value = existingBook ? (existingBook.fullReference || "") : "";
+    bookIntextInput.value = existingBook ? (existingBook.inTextCitation || "") : "";
+    selectedBookSwatch = existingBook ? (existingBook.color || SPINE_COLORS[0]) : SPINE_COLORS[data.books.length % SPINE_COLORS.length];
+    renderSwatchPicker(bookSwatchesEl, selectedBookSwatch, pickBookSwatch);
+    bookModalBackdrop.classList.add("show");
+    setTimeout(function(){ bookTitleInput.focus(); }, 30);
+  }
+  bookCancelBtn.addEventListener("click", function(){ bookModalBackdrop.classList.remove("show"); });
+  bookSaveBtn.addEventListener("click", function(){
+    var title = bookTitleInput.value.trim();
+    if(!title){ bookTitleInput.focus(); return; }
+    if(editingBookId){
+      var existing = findBook(editingBookId);
+      existing.title = title;
+      existing.author = bookAuthorInput.value.trim();
+      existing.fullReference = bookFullrefInput.value.trim();
+      existing.inTextCitation = bookIntextInput.value.trim();
+      existing.color = selectedBookSwatch;
+      persist();
+      bookModalBackdrop.classList.remove("show");
+      renderTree(); renderMain();
+    } else {
+      var book = { id:uid(), title:title, author:bookAuthorInput.value.trim(), fullReference:bookFullrefInput.value.trim(),
+        inTextCitation:bookIntextInput.value.trim(), color:selectedBookSwatch, chapters:[] };
+      data.books.push(book);
+      persist();
+      bookModalBackdrop.classList.remove("show");
+      state.openBookId = book.id;
+      renderTree();
+    }
+  });
+
+  // ================= CHAPTER MODAL =================
+  function openChapterModal(bookId){
+    chapterModalBookId = bookId;
+    chapterTitleModalInput.value = "";
+    chapterModalBackdrop.classList.add("show");
+    setTimeout(function(){ chapterTitleModalInput.focus(); }, 30);
+  }
+  chapterCancelBtn.addEventListener("click", function(){ chapterModalBackdrop.classList.remove("show"); });
+  chapterSaveBtn.addEventListener("click", function(){
+    var title = chapterTitleModalInput.value.trim();
+    if(!title){ chapterTitleModalInput.focus(); return; }
+    var book = findBook(chapterModalBookId);
+    var ch = { id:uid(), title:title, tags:[], sourceText:"", sourceRange:"", notes:"", updated:Date.now() };
+    book.chapters.push(ch);
+    state.openBookId = book.id;
+    state.activeChapterId = ch.id;
+    persist();
+    chapterModalBackdrop.classList.remove("show");
+    renderTree(); renderMain();
+  });
+
+  [unitModalBackdrop, dayModalBackdrop, bulkModalBackdrop, bookModalBackdrop, chapterModalBackdrop].forEach(function(bd){
+    bd.addEventListener("click", function(e){ if(e.target === bd) bd.classList.remove("show"); });
+  });
+
+  // ================= SEARCH =================
+  searchInput.addEventListener("input", function(){
+    var q = searchInput.value.trim().toLowerCase();
+    if(!q || (state.mode !== "planner" && state.mode !== "library")){ searchResultsEl.style.display = "none"; searchResultsEl.innerHTML = ""; return; }
+    var hits = [];
+    if(state.mode === "planner"){
+      data.units.forEach(function(unit){
+        unit.weeks.forEach(function(week){
+          week.days.forEach(function(day){
+            var readingsText = (day.readings||[]).map(function(r){return r.text;}).join(" ");
+            var objectivesText = (day.objectives||[]).map(function(o){return o.text;}).join(" ");
+            var qaText = (day.qa||[]).map(function(q){return q.question + " " + q.answer;}).join(" ");
+            var haystack = (day.label + " " + day.topic + " " + readingsText + " " + objectivesText + " " + qaText + " " + stripHtml(day.notes) + " " + stripHtml(day.reflection) + " " + stripHtml(day.sourceText)).toLowerCase();
+            if(haystack.indexOf(q) !== -1){
+              hits.push({label: day.topic || day.label, path: unit.title + " · Week " + week.number + " · " + day.label,
+                go: function(){ state.openUnitId = unit.id; state.activeDayId = day.id; }});
+            }
+          });
+        });
+      });
+    } else {
+      data.books.forEach(function(book){
+        book.chapters.forEach(function(ch){
+          var haystack = (ch.title + " " + (ch.tags||[]).join(" ") + " " + stripHtml(ch.notes) + " " + stripHtml(ch.sourceText)).toLowerCase();
+          if(haystack.indexOf(q) !== -1){
+            hits.push({label: ch.title || "Untitled", path: book.title,
+              go: function(){ state.openBookId = book.id; state.activeChapterId = ch.id; }});
+          }
+        });
+      });
+    }
+    searchResultsEl.style.display = hits.length ? "block" : "none";
+    searchResultsEl.innerHTML = "";
+    hits.slice(0,20).forEach(function(hit){
+      var div = document.createElement("div");
+      div.className = "hit";
+      div.innerHTML = '<b></b><span class="path"></span>';
+      div.querySelector("b").textContent = hit.label;
+      div.querySelector(".path").textContent = hit.path;
+      div.addEventListener("click", function(){
+        hit.go();
+        searchInput.value = "";
+        searchResultsEl.style.display = "none";
+        renderTree(); renderMain();
+      });
+      searchResultsEl.appendChild(div);
+    });
+  });
+
+  // ================= EXPORT / IMPORT =================
+  exportBtn.addEventListener("click", function(){
+    var blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "study-toolkit-backup-" + new Date().toISOString().slice(0,10) + ".json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  importBtn.addEventListener("click", function(){ importFile.click(); });
+  importFile.addEventListener("change", function(){
+    var file = importFile.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e){
+      try{
+        var parsed = JSON.parse(e.target.result);
+        if(!parsed || !Array.isArray(parsed.units) || !Array.isArray(parsed.books)) throw new Error("Not a valid backup file");
+        if(!Array.isArray(parsed.quickCaptures)) parsed.quickCaptures = [];
+        var replace = confirm("Replace your current toolkit with this backup?\n\nOK = replace everything\nCancel = merge (add alongside what you have)");
+        if(replace){
+          data = parsed;
+        } else {
+          data.units = data.units.concat(parsed.units);
+          data.books = data.books.concat(parsed.books);
+          data.quickCaptures = (data.quickCaptures || []).concat(parsed.quickCaptures);
+        }
+        state.openUnitId = null; state.openBookId = null;
+        state.activeDayId = null; state.activeChapterId = null;
+        persist();
+        renderTree(); renderMain();
+      }catch(err){
+        alert("Couldn't read that file as a study toolkit backup.\n\n" + err.message);
+      }
+      importFile.value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  reloadRemoteBtn.addEventListener("click", function(){
+    if(pendingRemoteData){
+      data = pendingRemoteData;
+      pendingRemoteData = null;
+      remoteUpdateBanner.style.display = "none";
+      renderTree(); renderMain();
+    }
+  });
+
+  // ================= INIT =================
+  if(data.units.length) state.openUnitId = data.units[0].id;
+  setMode("dashboard");
+
+  function attachFirebaseListener(){
+    setSyncStatus("Connecting to Firebase…");
+    fbRef.on("value", function(snapshot){
+      var serverData = snapshot.val();
+      if(!serverData){
+        setSyncStatus(syncedLabel());
+        persist();
+        return;
+      }
+      var incomingJSON = JSON.stringify(serverData);
+      if(incomingJSON === lastWrittenJSON){
+        setSyncStatus(syncedLabel());
+        return;
+      }
+      var activeEl = document.activeElement;
+      var isEditingNow = activeEl && (activeEl.isContentEditable || activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA");
+      if(isEditingNow){
+        pendingRemoteData = serverData;
+        remoteUpdateBanner.style.display = "flex";
+        setSyncStatus("Update waiting — finish typing to reload");
+      } else {
+        data = serverData;
+        try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
+        renderTree(); renderMain();
+        setSyncStatus(syncedLabel());
+      }
+    }, function(err){
+      console.error("Firebase read failed", err);
+      setSyncStatus("Sync failed (check auth/rules) — using local storage only");
+    });
+  }
+
+  if(firebaseEnabled && fbRef){
+    firebase.auth().onAuthStateChanged(function(user){
+      if(user){
+        attachFirebaseListener();
+      } else {
+        setSyncStatus("Signing in…");
+        firebase.auth().signInAnonymously().catch(function(err){
+          console.error("Anonymous sign-in failed", err);
+          setSyncStatus("Sign-in failed (enable Anonymous auth) — using local storage only");
+        });
+      }
+    });
+  }
+
+})();
+</script>
+</body>
+</html>
