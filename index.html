@@ -803,14 +803,48 @@
     return { units:[unit], books:[book], quickCaptures:[] };
   }
 
+  // Firebase Realtime Database silently drops empty arrays/objects on write, so anything that
+  // was an empty array (e.g. a week with no days yet, a book with no chapters) can come back
+  // from the server as `undefined` instead of `[]`. This walks the whole structure and restores
+  // safe defaults so rendering code never has to guard every single access.
+  function normalizeData(d){
+    if(!d || typeof d !== "object") return { units:[], books:[], quickCaptures:[] };
+    d.units = Array.isArray(d.units) ? d.units : [];
+    d.books = Array.isArray(d.books) ? d.books : [];
+    d.quickCaptures = Array.isArray(d.quickCaptures) ? d.quickCaptures : [];
+    d.units.forEach(function(u){
+      u.weeks = Array.isArray(u.weeks) ? u.weeks : [];
+      u.weeks.forEach(function(w){
+        w.days = Array.isArray(w.days) ? w.days : [];
+        w.days.forEach(function(day){
+          day.readings = Array.isArray(day.readings) ? day.readings : [];
+          day.objectives = Array.isArray(day.objectives) ? day.objectives : [];
+          day.qa = Array.isArray(day.qa) ? day.qa : [];
+          day.notes = day.notes || "";
+          day.reflection = day.reflection || "";
+          day.sourceText = day.sourceText || "";
+        });
+      });
+    });
+    d.books.forEach(function(b){
+      b.chapters = Array.isArray(b.chapters) ? b.chapters : [];
+      b.chapters.forEach(function(c){
+        c.tags = Array.isArray(c.tags) ? c.tags : [];
+        c.qa = Array.isArray(c.qa) ? c.qa : [];
+        c.notes = c.notes || "";
+        c.sourceText = c.sourceText || "";
+      });
+    });
+    return d;
+  }
+
   function load(){
     try{
       var raw = localStorage.getItem(STORAGE_KEY);
       if(raw){
         var parsed = JSON.parse(raw);
         if(parsed && Array.isArray(parsed.units) && Array.isArray(parsed.books)){
-          if(!Array.isArray(parsed.quickCaptures)) parsed.quickCaptures = [];
-          return parsed;
+          return normalizeData(parsed);
         }
       }
     }catch(e){ console.error("Load failed", e); }
@@ -1005,8 +1039,8 @@
       var key = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
       counts[key] = (counts[key] || 0) + 1;
     }
-    data.units.forEach(function(u){ u.weeks.forEach(function(w){ w.days.forEach(function(d){ bump(d.updated); }); }); });
-    data.books.forEach(function(b){ b.chapters.forEach(function(c){ bump(c.updated); }); });
+    (data.units || []).forEach(function(u){ (u.weeks || []).forEach(function(w){ (w.days || []).forEach(function(d){ bump(d.updated); }); }); });
+    (data.books || []).forEach(function(b){ (b.chapters || []).forEach(function(c){ bump(c.updated); }); });
     return counts;
   }
   function renderActivityHeatmap(container){
@@ -2569,7 +2603,7 @@
       try{
         var parsed = JSON.parse(e.target.result);
         if(!parsed || !Array.isArray(parsed.units) || !Array.isArray(parsed.books)) throw new Error("Not a valid backup file");
-        if(!Array.isArray(parsed.quickCaptures)) parsed.quickCaptures = [];
+        parsed = normalizeData(parsed);
         var replace = confirm("Replace your current toolkit with this backup?\n\nOK = replace everything\nCancel = merge (add alongside what you have)");
         if(replace){
           data = parsed;
@@ -2607,8 +2641,8 @@
       var manifest = {
         name: "Study Toolkit — Counselling",
         short_name: "Study Toolkit",
-        start_url: ".",
-        scope: ".",
+        start_url: location.href.split("#")[0],
+        scope: location.href.slice(0, location.href.lastIndexOf("/") + 1),
         display: "standalone",
         background_color: "#F3EEE1",
         theme_color: "#B5592E",
@@ -2674,8 +2708,8 @@
   })();
 
   // ================= INIT =================
+  data = normalizeData(data);
   if(data.units.length) state.openUnitId = data.units[0].id;
-  setMode("dashboard");
 
   function attachFirebaseListener(){
     setSyncStatus("Connecting to Firebase…");
@@ -2698,9 +2732,9 @@
         remoteUpdateBanner.style.display = "flex";
         setSyncStatus("Update waiting — finish typing to reload");
       } else {
-        data = serverData;
+        data = normalizeData(serverData);
         try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
-        renderTree(); renderMain();
+        try{ renderTree(); renderMain(); }catch(renderErr){ console.error("Render failed after Firebase update", renderErr); }
         setSyncStatus(syncedLabel());
       }
     }, function(err){
@@ -2709,6 +2743,9 @@
     });
   }
 
+  // Firebase connection setup runs FIRST and unconditionally, so a bug in rendering the UI
+  // (below) can never again prevent sync from starting — this is deliberately isolated from
+  // the initial render so the two can't take each other down.
   if(firebaseEnabled && fbRef){
     firebase.auth().onAuthStateChanged(function(user){
       if(user){
@@ -2721,6 +2758,12 @@
         });
       }
     });
+  }
+
+  try{
+    setMode("dashboard");
+  }catch(initRenderErr){
+    console.error("Initial render failed", initRenderErr);
   }
 
 })();
