@@ -332,6 +332,16 @@
   .fmt-toolbar button.wide{ width:auto; padding:0 10px; font-family: system-ui, sans-serif; font-size:11px; }
   .fmt-toolbar button.danger{ color:var(--danger); }
   .fmt-toolbar button.highlight-swatch{ border-color:rgba(0,0,0,0.15); }
+  .fmt-toolbar button.text-color-swatch{ background:#fff; font-weight:700; font-size:14px; font-family: Georgia, serif; }
+
+  .rich-editable a{ color:var(--terracotta); text-decoration:underline; cursor:pointer; }
+  .rich-editable hr{ border:none; border-top:2px solid var(--border); margin:16px 0; }
+  .rich-editable table{ border-collapse:collapse; width:100%; margin:10px 0; font-size:13px; }
+  .rich-editable table td, .rich-editable table th{ border:1px solid var(--border); padding:6px 9px; text-align:left; }
+  .rich-editable table th{ background:var(--sage-tint); font-weight:600; color:var(--sage-dark); }
+  .todo-item{ display:flex; align-items:flex-start; gap:8px; margin:5px 0; }
+  .todo-item input[type=checkbox]{ margin-top:4px; width:15px; height:15px; accent-color:var(--sage-dark); flex-shrink:0; cursor:pointer; }
+  .todo-item.todo-checked span{ text-decoration:line-through; color:var(--ink-soft); }
   .fmt-divider{ width:1px; background:var(--border); margin:2px 4px; }
 
   .page-scroll{ flex:1; overflow-y:auto; padding:26px 0 60px; display:flex; justify-content:center; }
@@ -391,17 +401,59 @@
   .obj-color-dot{
     width:10px; height:10px; border-radius:50%; flex-shrink:0; border:1px solid rgba(0,0,0,0.15);
   }
-  .objective-tag-chips{
-    display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed var(--border);
+  .notes-body-row{ display:flex; gap:12px; flex:1; min-height:0; }
+  .objective-rail{
+    display:flex; flex-direction:column; gap:6px; width:118px; flex-shrink:0;
   }
-  .objective-tag-chips .obj-tag-hint{
-    font-family: system-ui, sans-serif; font-size:10.5px; color:var(--ink-soft); width:100%; margin-bottom:2px;
+  .objective-rail .obj-rail-hint{
+    font-family: system-ui, sans-serif; font-size:10px; color:var(--ink-soft); line-height:1.4; margin-bottom:2px;
   }
   .obj-tag-chip{
-    font-family: system-ui, sans-serif; font-size:11px; border:none; border-radius:12px; padding:4px 10px;
-    cursor:pointer; color:#3a3427; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    font-family: system-ui, sans-serif; font-size:11px; border:none; border-radius:8px; padding:7px 9px;
+    cursor:pointer; color:#3a3427; text-align:left; line-height:1.3; word-break:break-word;
   }
   .obj-tag-chip:hover{ filter:brightness(0.93); }
+  @keyframes flashPulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(181,89,46,0); } 50%{ box-shadow:0 0 0 4px rgba(181,89,46,0.55); } }
+  .flash-highlight{ animation: flashPulse 0.55s ease-in-out 2; border-radius:3px; }
+
+  .chapter-link-chip{
+    display:flex; align-items:center; gap:7px; margin:6px 0; padding:7px 12px; border-radius:7px;
+    background:var(--ochre-tint); border:1px solid var(--ochre); cursor:pointer; user-select:none;
+    font-family: system-ui, sans-serif; max-width:340px;
+  }
+  .chapter-link-chip:hover{ filter:brightness(0.97); }
+  .chapter-link-chip .chip-icon{ font-size:13px; flex-shrink:0; }
+  .chapter-link-chip .chip-label{ flex:1; font-size:12.5px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  .source-result-item{ border:1px solid var(--border); border-radius:6px; padding:10px 12px; margin-bottom:8px; font-family: system-ui, sans-serif; }
+  .source-result-item .sr-title{ font-size:12.5px; font-weight:600; color:var(--ink); margin-bottom:3px; line-height:1.4; }
+  .source-result-item .sr-meta{ font-size:11px; color:var(--ink-soft); margin-bottom:6px; }
+
+  .outline-popup{
+    position:fixed; z-index:60; background:#fff; border:1px solid var(--border); border-radius:8px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.22); padding:6px; max-width:280px; max-height:320px; overflow-y:auto;
+  }
+  .outline-popup-item{
+    padding:7px 10px; font-family: system-ui, sans-serif; font-size:12.5px; color:var(--ink); cursor:pointer; border-radius:5px;
+  }
+  .outline-popup-item:hover{ background:var(--sage-tint); }
+  .outline-popup-empty{ padding:10px 12px; font-family: system-ui, sans-serif; font-size:12px; color:var(--ink-soft); }
+
+  body.focus-mode .shelf{ display:none; }
+  body.focus-mode .mobile-topbar{ display:none; }
+  body.focus-mode .page-scroll{ padding-top:50px; }
+
+  .shortcut-row{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+  .shortcut-row input{
+    padding:6px 9px; border:1px solid var(--border); border-radius:5px; font-family: system-ui, sans-serif; font-size:12.5px;
+  }
+  .shortcut-row .shortcut-key-input{ width:80px; flex-shrink:0; }
+  .shortcut-row .shortcut-val-input{ flex:1; }
+  .shortcut-row .remove-reading{ background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:14px; }
+  .shortcut-row .remove-reading:hover{ color:var(--danger); }
+
+  .reference-list-item{ padding:8px 0; border-bottom:1px solid var(--border); }
+  .reference-list-item:last-child{ border-bottom:none; }
 
   .rich-editable{
     font-family: var(--note-font-family); font-size: var(--note-font-size); line-height:1.7; color:var(--ink); outline:none; min-height:120px;
@@ -411,6 +463,15 @@
   .rich-editable ul, .rich-editable ol{ padding-left:20px; }
   .rich-editable:empty::before{ content: attr(data-placeholder); color:#c7bda4; }
   .rich-editable img{ max-width:100%; height:auto; border-radius:6px; margin:8px 0; display:block; box-shadow:0 1px 4px rgba(0,0,0,0.15); }
+  .embedded-widget-chip{
+    display:flex; align-items:center; gap:8px; margin:8px 0; padding:9px 14px; border-radius:8px;
+    background:var(--sage-tint); border:1px solid var(--sage); cursor:pointer; user-select:none;
+    font-family: system-ui, sans-serif; max-width:340px;
+  }
+  .embedded-widget-chip:hover{ filter:brightness(0.97); }
+  .embedded-widget-chip .chip-icon{ font-size:15px; color:var(--sage-dark); flex-shrink:0; }
+  .embedded-widget-chip .chip-label{ flex:1; font-size:13px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .embedded-widget-chip .chip-hint{ font-size:10.5px; color:var(--ink-soft); flex-shrink:0; }
 
   .card.reflection{ background:var(--sage-tint); }
   .card.reflection h3{ color:var(--sage-dark); }
@@ -652,6 +713,7 @@
     <div class="sub">Masters of Counselling</div>
     <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle dark mode">🌙</button>
     <button class="theme-toggle-btn" id="text-settings-btn" style="right:56px;" title="Font &amp; text size">Aa</button>
+    <button class="theme-toggle-btn" id="text-shortcuts-btn" style="right:108px;" title="Text shortcuts (abbreviation expansion)">⚡</button>
   </div>
 
   <div class="mode-tabs">
@@ -729,6 +791,71 @@
     </div>
   </div>
 </div>
+
+<div class="modal-backdrop" id="widget-modal-backdrop">
+  <div class="modal" style="width:min(560px, 92vw); max-height:85vh; overflow-y:auto;">
+    <div id="widget-modal-body"></div>
+    <div class="modal-actions">
+      <button id="widget-modal-close-btn" class="primary">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="link-chapter-modal-backdrop">
+  <div class="modal" style="width:min(420px, 92vw);">
+    <h3>Link to a Library chapter</h3>
+    <label>Chapter</label>
+    <select id="link-chapter-select" style="width:100%; padding:7px 9px; border-radius:5px; border:1px solid var(--border); font-family: system-ui, sans-serif; font-size:13px;"></select>
+    <div class="modal-actions">
+      <button id="link-chapter-cancel-btn">Cancel</button>
+      <button id="link-chapter-insert-btn" class="primary">Insert link</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="source-search-modal-backdrop">
+  <div class="modal" style="width:min(520px, 92vw); max-height:82vh; overflow-y:auto;">
+    <h3>Find scholarly sources</h3>
+    <p style="font-family: system-ui, sans-serif; font-size:11.5px; color:var(--ink-soft); line-height:1.5; margin:0 0 10px;">
+      Searches CrossRef, a free public database of journal articles and their DOIs. Most entries are peer-reviewed journal articles, but CrossRef itself doesn't certify peer-review status — worth a quick sanity check on anything you cite formally.
+    </p>
+    <label>Search query</label>
+    <input type="text" id="source-search-input" placeholder="e.g. dual relationships counselling ethics" style="width:100%; padding:7px 9px; border-radius:5px; border:1px solid var(--border); font-family: system-ui, sans-serif; font-size:13px;">
+    <button id="source-search-btn" class="primary" style="margin-top:10px; padding:8px 14px; border-radius:6px; border:none; font-family: system-ui, sans-serif; font-size:12.5px; cursor:pointer;">Search</button>
+    <div id="source-search-status" style="font-family: system-ui, sans-serif; font-size:11px; color:var(--ink-soft); margin-top:8px;"></div>
+    <div id="source-search-results" style="margin-top:10px;"></div>
+    <div class="modal-actions">
+      <button id="source-search-close-btn">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="text-shortcuts-modal-backdrop">
+  <div class="modal" style="width:min(420px, 92vw); max-height:80vh; overflow-y:auto;">
+    <h3>Text shortcuts</h3>
+    <p style="font-family: system-ui, sans-serif; font-size:11.5px; color:var(--ink-soft); line-height:1.5; margin:0 0 10px;">
+      Type the shortcut followed by a space anywhere in your notes and it expands automatically. Saved on this device only.
+    </p>
+    <div id="text-shortcuts-list"></div>
+    <button class="add-objective-btn" id="add-text-shortcut-btn">+ Add shortcut</button>
+    <div class="modal-actions">
+      <button id="text-shortcuts-close-btn" class="primary">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="reference-list-modal-backdrop">
+  <div class="modal" style="width:min(520px, 92vw); max-height:82vh; overflow-y:auto;">
+    <h3>Reference list</h3>
+    <div id="reference-list-body" style="font-family: system-ui, sans-serif; font-size:12.5px; color:var(--ink); line-height:1.7;"></div>
+    <div class="modal-actions">
+      <button id="reference-list-copy-btn">📋 Copy all</button>
+      <button id="reference-list-close-btn" class="primary">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="focus-mode-exit-btn" style="display:none; position:fixed; top:16px; left:16px; z-index:90; background:var(--sage-dark); color:#fff; border:none; border-radius:20px; padding:9px 16px; font-family: system-ui, sans-serif; font-size:12.5px; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,0.25);">✕ Exit focus mode</div>
 
 <div class="modal-backdrop" id="text-settings-modal-backdrop">
   <div class="modal" style="width:340px;">
@@ -1431,190 +1558,181 @@
   });
 
   // ================= SLIDESHOWS / SCENARIOS =================
+  // These render ONE deck/activity at a time into a given container — used inside the
+  // embedded-widget modal opened from a chip placed in the notes text (see below).
   var slideshowViewIndex = {};   // deck.id -> currently viewed slide index (transient, not synced)
   var slideshowEditingSet = {};  // deck.id -> true while its slide list is open for editing (transient)
 
-  function renderSlideshows(ctx){
-    ctx.day.slideshows = ctx.day.slideshows || [];
-    var listEl = document.getElementById("slideshows-list");
-    if(!listEl) return;
-    listEl.innerHTML = "";
+  function renderSlideshowDeckInto(deck, container, ctx){
+    deck.slides = deck.slides || [];
+    container.innerHTML = "";
 
-    ctx.day.slideshows.forEach(function(deck){
-      deck.slides = deck.slides || [];
-      var deckEl = document.createElement("div");
-      deckEl.className = "slideshow-deck";
+    var deckEl = document.createElement("div");
+    deckEl.className = "slideshow-deck";
+    deckEl.style.border = "none";
+    deckEl.style.padding = "0";
+    deckEl.style.margin = "0";
 
-      var header = document.createElement("div");
-      header.className = "slideshow-deck-header";
+    var header = document.createElement("div");
+    header.className = "slideshow-deck-header";
 
-      var nameInput = document.createElement("input");
-      nameInput.type = "text";
-      nameInput.className = "slideshow-deck-name";
-      nameInput.placeholder = "Name this slideshow, e.g. ACA Code Summary";
-      nameInput.value = deck.name || "";
-      nameInput.addEventListener("input", function(){
-        deck.name = nameInput.value;
-        scheduleSave(function(){ ctx.day.updated = Date.now(); });
-      });
-      header.appendChild(nameInput);
-
-      var editBtn = document.createElement("button");
-      editBtn.className = "card-collapse-btn";
-      editBtn.textContent = slideshowEditingSet[deck.id] ? "Done editing" : "✎ Edit slides";
-      editBtn.addEventListener("click", function(){
-        slideshowEditingSet[deck.id] = !slideshowEditingSet[deck.id];
-        renderSlideshows(ctx);
-      });
-      header.appendChild(editBtn);
-
-      var deleteDeckBtn = document.createElement("button");
-      deleteDeckBtn.className = "card-collapse-btn";
-      deleteDeckBtn.title = "Delete this slideshow";
-      deleteDeckBtn.textContent = "✕";
-      deleteDeckBtn.addEventListener("click", function(){
-        if(confirm('Delete "' + (deck.name || "this slideshow") + '"? (Undo available for a few seconds after.)')){
-          var idx = ctx.day.slideshows.indexOf(deck);
-          ctx.day.slideshows = ctx.day.slideshows.filter(function(d){ return d.id !== deck.id; });
-          persist(); renderSlideshows(ctx);
-          showUndoToast('Deleted "' + (deck.name || "slideshow") + '"', function(){
-            ctx.day.slideshows.splice(idx, 0, deck);
-            persist(); renderSlideshows(ctx);
-          });
-        }
-      });
-      header.appendChild(deleteDeckBtn);
-
-      deckEl.appendChild(header);
-
-      if(slideshowEditingSet[deck.id]){
-        deck.slides.forEach(function(slide, idx){
-          var row = document.createElement("div");
-          row.className = "slideshow-edit-row";
-          row.innerHTML =
-            '<div class="slide-fields">' +
-              '<input type="text" class="slide-title-input" placeholder="Slide title, e.g. 6.2 Client self-determination">' +
-              '<textarea class="slide-body-input" rows="3" placeholder="Slide content, in your own words…"></textarea>' +
-            '</div>' +
-            '<div class="slideshow-edit-actions">' +
-              '<button class="day-move-btn" title="Move up">▲</button>' +
-              '<button class="day-move-btn" title="Move down">▼</button>' +
-              '<button class="remove-reading" title="Remove slide">✕</button>' +
-            '</div>';
-          var titleInput = row.querySelector(".slide-title-input");
-          var bodyInput = row.querySelector(".slide-body-input");
-          titleInput.value = slide.title || "";
-          bodyInput.value = slide.body || "";
-          titleInput.addEventListener("input", function(){
-            slide.title = titleInput.value;
-            scheduleSave(function(){ ctx.day.updated = Date.now(); });
-          });
-          bodyInput.addEventListener("input", function(){
-            slide.body = bodyInput.value;
-            scheduleSave(function(){ ctx.day.updated = Date.now(); });
-          });
-          var actionBtns = row.querySelectorAll(".slideshow-edit-actions button");
-          actionBtns[0].addEventListener("click", function(){
-            if(idx > 0){ deck.slides.splice(idx,1); deck.slides.splice(idx-1,0,slide); persist(); renderSlideshows(ctx); }
-          });
-          actionBtns[1].addEventListener("click", function(){
-            if(idx < deck.slides.length-1){ deck.slides.splice(idx,1); deck.slides.splice(idx+1,0,slide); persist(); renderSlideshows(ctx); }
-          });
-          actionBtns[2].addEventListener("click", function(){
-            deck.slides = deck.slides.filter(function(s){ return s.id !== slide.id; });
-            persist(); renderSlideshows(ctx);
-          });
-          deckEl.appendChild(row);
-        });
-        var addSlideBtn = document.createElement("button");
-        addSlideBtn.className = "add-objective-btn";
-        addSlideBtn.textContent = "+ Add slide";
-        addSlideBtn.addEventListener("click", function(){
-          deck.slides.push({ id:uid(), title:"", body:"" });
-          persist(); renderSlideshows(ctx);
-        });
-        deckEl.appendChild(addSlideBtn);
-      } else {
-        var total = deck.slides.length;
-        if(!total){
-          var empty = document.createElement("div");
-          empty.className = "slideshow-empty";
-          empty.textContent = 'No slides yet — click "✎ Edit slides" to add some.';
-          deckEl.appendChild(empty);
-        } else {
-          if(slideshowViewIndex[deck.id] === undefined || slideshowViewIndex[deck.id] >= total){
-            slideshowViewIndex[deck.id] = Math.min(slideshowViewIndex[deck.id] || 0, total - 1);
-          }
-          var idx2 = slideshowViewIndex[deck.id];
-          var slide2 = deck.slides[idx2];
-
-          var counter = document.createElement("div");
-          counter.className = "slideshow-counter";
-          counter.textContent = "Slide " + (idx2+1) + " of " + total;
-          deckEl.appendChild(counter);
-
-          var viewer = document.createElement("div");
-          viewer.className = "slideshow-viewer";
-          viewer.tabIndex = 0;
-          viewer.title = "Click here, then use the left/right arrow keys to navigate";
-
-          var slideDiv = document.createElement("div");
-          slideDiv.className = "slideshow-slide";
-          if(slide2.title){
-            var h4 = document.createElement("h4");
-            h4.textContent = slide2.title;
-            slideDiv.appendChild(h4);
-          }
-          var bodyDiv = document.createElement("div");
-          bodyDiv.className = "slideshow-slide-body";
-          bodyDiv.textContent = slide2.body || "";
-          slideDiv.appendChild(bodyDiv);
-          viewer.appendChild(slideDiv);
-
-          function goPrev(){ if(slideshowViewIndex[deck.id] > 0){ slideshowViewIndex[deck.id]--; renderSlideshows(ctx); } }
-          function goNext(){ if(slideshowViewIndex[deck.id] < total - 1){ slideshowViewIndex[deck.id]++; renderSlideshows(ctx); } }
-          viewer.addEventListener("keydown", function(e){
-            if(e.key === "ArrowLeft"){ e.preventDefault(); goPrev(); }
-            else if(e.key === "ArrowRight"){ e.preventDefault(); goNext(); }
-          });
-
-          var nav = document.createElement("div");
-          nav.className = "slideshow-nav";
-          var prevBtn = document.createElement("button");
-          prevBtn.textContent = "‹";
-          prevBtn.title = "Previous slide";
-          prevBtn.disabled = idx2 === 0;
-          prevBtn.addEventListener("click", goPrev);
-          var countSpan = document.createElement("span");
-          countSpan.className = "slideshow-nav-count";
-          countSpan.textContent = (idx2+1) + " / " + total;
-          var nextBtn = document.createElement("button");
-          nextBtn.textContent = "›";
-          nextBtn.title = "Next slide";
-          nextBtn.disabled = idx2 === total - 1;
-          nextBtn.addEventListener("click", goNext);
-          nav.appendChild(prevBtn);
-          nav.appendChild(countSpan);
-          nav.appendChild(nextBtn);
-
-          deckEl.appendChild(viewer);
-          deckEl.appendChild(nav);
-        }
-      }
-
-      listEl.appendChild(deckEl);
+    var nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.className = "slideshow-deck-name";
+    nameInput.placeholder = "Name this slideshow, e.g. ACA Code Summary";
+    nameInput.value = deck.name || "";
+    nameInput.addEventListener("input", function(){
+      deck.name = nameInput.value;
+      scheduleSave(function(){ ctx.day.updated = Date.now(); });
     });
-  }
-  document.addEventListener("click", function(e){
-    if(e.target && e.target.id === "add-slideshow-btn"){
-      var ctx = activeDayCtx();
-      if(!ctx) return;
-      ctx.day.slideshows = ctx.day.slideshows || [];
-      ctx.day.slideshows.push({ id:uid(), name:"", slides:[] });
-      persist();
-      renderSlideshows(ctx);
+    header.appendChild(nameInput);
+
+    var editBtn = document.createElement("button");
+    editBtn.className = "card-collapse-btn";
+    editBtn.textContent = slideshowEditingSet[deck.id] ? "Done editing" : "✎ Edit slides";
+    editBtn.addEventListener("click", function(){
+      slideshowEditingSet[deck.id] = !slideshowEditingSet[deck.id];
+      renderSlideshowDeckInto(deck, container, ctx);
+    });
+    header.appendChild(editBtn);
+
+    var deleteDeckBtn = document.createElement("button");
+    deleteDeckBtn.className = "card-collapse-btn";
+    deleteDeckBtn.title = "Delete this slideshow";
+    deleteDeckBtn.textContent = "✕ Delete";
+    deleteDeckBtn.addEventListener("click", function(){
+      if(confirm('Delete "' + (deck.name || "this slideshow") + '"? (Undo available for a few seconds after.)')){
+        var idx = ctx.day.slideshows.indexOf(deck);
+        ctx.day.slideshows = ctx.day.slideshows.filter(function(d){ return d.id !== deck.id; });
+        persist();
+        widgetModalBackdrop.classList.remove("show");
+        showUndoToast('Deleted "' + (deck.name || "slideshow") + '"', function(){
+          ctx.day.slideshows.splice(idx, 0, deck);
+          persist();
+        });
+      }
+    });
+    header.appendChild(deleteDeckBtn);
+    deckEl.appendChild(header);
+
+    if(slideshowEditingSet[deck.id]){
+      deck.slides.forEach(function(slide, idx){
+        var row = document.createElement("div");
+        row.className = "slideshow-edit-row";
+        row.innerHTML =
+          '<div class="slide-fields">' +
+            '<input type="text" class="slide-title-input" placeholder="Slide title, e.g. 6.2 Client self-determination">' +
+            '<textarea class="slide-body-input" rows="3" placeholder="Slide content, in your own words…"></textarea>' +
+          '</div>' +
+          '<div class="slideshow-edit-actions">' +
+            '<button class="day-move-btn" title="Move up">▲</button>' +
+            '<button class="day-move-btn" title="Move down">▼</button>' +
+            '<button class="remove-reading" title="Remove slide">✕</button>' +
+          '</div>';
+        var titleInput = row.querySelector(".slide-title-input");
+        var bodyInput = row.querySelector(".slide-body-input");
+        titleInput.value = slide.title || "";
+        bodyInput.value = slide.body || "";
+        titleInput.addEventListener("input", function(){
+          slide.title = titleInput.value;
+          scheduleSave(function(){ ctx.day.updated = Date.now(); });
+        });
+        bodyInput.addEventListener("input", function(){
+          slide.body = bodyInput.value;
+          scheduleSave(function(){ ctx.day.updated = Date.now(); });
+        });
+        var actionBtns = row.querySelectorAll(".slideshow-edit-actions button");
+        actionBtns[0].addEventListener("click", function(){
+          if(idx > 0){ deck.slides.splice(idx,1); deck.slides.splice(idx-1,0,slide); persist(); renderSlideshowDeckInto(deck, container, ctx); }
+        });
+        actionBtns[1].addEventListener("click", function(){
+          if(idx < deck.slides.length-1){ deck.slides.splice(idx,1); deck.slides.splice(idx+1,0,slide); persist(); renderSlideshowDeckInto(deck, container, ctx); }
+        });
+        actionBtns[2].addEventListener("click", function(){
+          deck.slides = deck.slides.filter(function(s){ return s.id !== slide.id; });
+          persist(); renderSlideshowDeckInto(deck, container, ctx);
+        });
+        deckEl.appendChild(row);
+      });
+      var addSlideBtn = document.createElement("button");
+      addSlideBtn.className = "add-objective-btn";
+      addSlideBtn.textContent = "+ Add slide";
+      addSlideBtn.addEventListener("click", function(){
+        deck.slides.push({ id:uid(), title:"", body:"" });
+        persist(); renderSlideshowDeckInto(deck, container, ctx);
+      });
+      deckEl.appendChild(addSlideBtn);
+    } else {
+      var total = deck.slides.length;
+      if(!total){
+        var empty = document.createElement("div");
+        empty.className = "slideshow-empty";
+        empty.textContent = 'No slides yet — click "✎ Edit slides" to add some.';
+        deckEl.appendChild(empty);
+      } else {
+        if(slideshowViewIndex[deck.id] === undefined || slideshowViewIndex[deck.id] >= total){
+          slideshowViewIndex[deck.id] = Math.min(slideshowViewIndex[deck.id] || 0, total - 1);
+        }
+        var idx2 = slideshowViewIndex[deck.id];
+        var slide2 = deck.slides[idx2];
+
+        var counter = document.createElement("div");
+        counter.className = "slideshow-counter";
+        counter.textContent = "Slide " + (idx2+1) + " of " + total;
+        deckEl.appendChild(counter);
+
+        var viewer = document.createElement("div");
+        viewer.className = "slideshow-viewer";
+        viewer.tabIndex = 0;
+        viewer.title = "Click here, then use the left/right arrow keys to navigate";
+
+        var slideDiv = document.createElement("div");
+        slideDiv.className = "slideshow-slide";
+        if(slide2.title){
+          var h4 = document.createElement("h4");
+          h4.textContent = slide2.title;
+          slideDiv.appendChild(h4);
+        }
+        var bodyDiv = document.createElement("div");
+        bodyDiv.className = "slideshow-slide-body";
+        bodyDiv.textContent = slide2.body || "";
+        slideDiv.appendChild(bodyDiv);
+        viewer.appendChild(slideDiv);
+
+        function goPrev(){ if(slideshowViewIndex[deck.id] > 0){ slideshowViewIndex[deck.id]--; renderSlideshowDeckInto(deck, container, ctx); } }
+        function goNext(){ if(slideshowViewIndex[deck.id] < total - 1){ slideshowViewIndex[deck.id]++; renderSlideshowDeckInto(deck, container, ctx); } }
+        viewer.addEventListener("keydown", function(e){
+          if(e.key === "ArrowLeft"){ e.preventDefault(); goPrev(); }
+          else if(e.key === "ArrowRight"){ e.preventDefault(); goNext(); }
+        });
+
+        var nav = document.createElement("div");
+        nav.className = "slideshow-nav";
+        var prevBtn = document.createElement("button");
+        prevBtn.textContent = "‹";
+        prevBtn.title = "Previous slide";
+        prevBtn.disabled = idx2 === 0;
+        prevBtn.addEventListener("click", goPrev);
+        var countSpan = document.createElement("span");
+        countSpan.className = "slideshow-nav-count";
+        countSpan.textContent = (idx2+1) + " / " + total;
+        var nextBtn = document.createElement("button");
+        nextBtn.textContent = "›";
+        nextBtn.title = "Next slide";
+        nextBtn.disabled = idx2 === total - 1;
+        nextBtn.addEventListener("click", goNext);
+        nav.appendChild(prevBtn);
+        nav.appendChild(countSpan);
+        nav.appendChild(nextBtn);
+
+        deckEl.appendChild(viewer);
+        deckEl.appendChild(nav);
+        setTimeout(function(){ viewer.focus(); }, 0);
+      }
     }
-  });
+
+    container.appendChild(deckEl);
+  }
 
   // ================= IMAGE HOTSPOTS =================
   var hotspotEditingSet = {};  // activity.id -> true while its hotspots are open for editing (transient)
@@ -1672,192 +1790,751 @@
     document.body.appendChild(overlay);
   }
 
-  function renderHotspotActivities(ctx){
-    ctx.day.hotspotActivities = ctx.day.hotspotActivities || [];
-    var listEl = document.getElementById("hotspots-list");
-    if(!listEl) return;
-    listEl.innerHTML = "";
+  function renderHotspotActivityInto(activity, container, ctx){
+    activity.hotspots = activity.hotspots || [];
+    container.innerHTML = "";
 
-    ctx.day.hotspotActivities.forEach(function(activity){
-      activity.hotspots = activity.hotspots || [];
-      var activityEl = document.createElement("div");
-      activityEl.className = "hotspot-activity";
+    var activityEl = document.createElement("div");
+    activityEl.className = "hotspot-activity";
+    activityEl.style.border = "none";
+    activityEl.style.padding = "0";
+    activityEl.style.margin = "0";
 
-      var header = document.createElement("div");
-      header.className = "hotspot-activity-header";
-      var nameInput = document.createElement("input");
-      nameInput.type = "text";
-      nameInput.className = "hotspot-activity-name";
-      nameInput.placeholder = "Name this activity, e.g. Meet the characters";
-      nameInput.value = activity.name || "";
-      nameInput.addEventListener("input", function(){
-        activity.name = nameInput.value;
-        scheduleSave(function(){ ctx.day.updated = Date.now(); });
+    var header = document.createElement("div");
+    header.className = "hotspot-activity-header";
+    var nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.className = "hotspot-activity-name";
+    nameInput.placeholder = "Name this activity, e.g. Meet the characters";
+    nameInput.value = activity.name || "";
+    nameInput.addEventListener("input", function(){
+      activity.name = nameInput.value;
+      scheduleSave(function(){ ctx.day.updated = Date.now(); });
+    });
+    header.appendChild(nameInput);
+
+    if(activity.imageDataUrl){
+      var editBtn = document.createElement("button");
+      editBtn.className = "card-collapse-btn";
+      editBtn.textContent = hotspotEditingSet[activity.id] ? "Done editing" : "✎ Edit hotspots";
+      editBtn.addEventListener("click", function(){
+        hotspotEditingSet[activity.id] = !hotspotEditingSet[activity.id];
+        renderHotspotActivityInto(activity, container, ctx);
       });
-      header.appendChild(nameInput);
+      header.appendChild(editBtn);
+    }
 
-      if(activity.imageDataUrl){
-        var editBtn = document.createElement("button");
-        editBtn.className = "card-collapse-btn";
-        editBtn.textContent = hotspotEditingSet[activity.id] ? "Done editing" : "✎ Edit hotspots";
-        editBtn.addEventListener("click", function(){
-          hotspotEditingSet[activity.id] = !hotspotEditingSet[activity.id];
-          renderHotspotActivities(ctx);
+    var deleteBtn = document.createElement("button");
+    deleteBtn.className = "card-collapse-btn";
+    deleteBtn.title = "Delete this activity";
+    deleteBtn.textContent = "✕ Delete";
+    deleteBtn.addEventListener("click", function(){
+      if(confirm('Delete "' + (activity.name || "this activity") + '"? (Undo available for a few seconds after.)')){
+        var idx = ctx.day.hotspotActivities.indexOf(activity);
+        ctx.day.hotspotActivities = ctx.day.hotspotActivities.filter(function(a){ return a.id !== activity.id; });
+        persist();
+        widgetModalBackdrop.classList.remove("show");
+        showUndoToast('Deleted "' + (activity.name || "activity") + '"', function(){
+          ctx.day.hotspotActivities.splice(idx, 0, activity);
+          persist();
         });
-        header.appendChild(editBtn);
+      }
+    });
+    header.appendChild(deleteBtn);
+    activityEl.appendChild(header);
+
+    if(!activity.imageDataUrl){
+      var uploadHint = document.createElement("div");
+      uploadHint.className = "hotspot-add-hint";
+      uploadHint.textContent = "Upload an image, then click on it to drop hotspot markers.";
+      activityEl.appendChild(uploadHint);
+
+      var fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = "image/*";
+      fileInput.addEventListener("change", function(){
+        var file = fileInput.files[0];
+        if(!file) return;
+        readFileAsImage(file, function(dataUrl){
+          activity.imageDataUrl = dataUrl;
+          persist(); renderHotspotActivityInto(activity, container, ctx);
+        });
+      });
+      activityEl.appendChild(fileInput);
+    } else {
+      var editing = !!hotspotEditingSet[activity.id];
+      if(editing){
+        var editHint = document.createElement("div");
+        editHint.className = "hotspot-add-hint";
+        editHint.textContent = "Click anywhere on the image to add a hotspot marker. Click an existing marker to remove it.";
+        activityEl.appendChild(editHint);
       }
 
-      var deleteBtn = document.createElement("button");
-      deleteBtn.className = "card-collapse-btn";
-      deleteBtn.title = "Delete this activity";
-      deleteBtn.textContent = "✕";
-      deleteBtn.addEventListener("click", function(){
-        if(confirm('Delete "' + (activity.name || "this activity") + '"? (Undo available for a few seconds after.)')){
-          var idx = ctx.day.hotspotActivities.indexOf(activity);
-          ctx.day.hotspotActivities = ctx.day.hotspotActivities.filter(function(a){ return a.id !== activity.id; });
-          persist(); renderHotspotActivities(ctx);
-          showUndoToast('Deleted "' + (activity.name || "activity") + '"', function(){
-            ctx.day.hotspotActivities.splice(idx, 0, activity);
-            persist(); renderHotspotActivities(ctx);
-          });
-        }
+      var wrap = document.createElement("div");
+      wrap.className = "hotspot-image-wrap" + (editing ? "" : " view-mode");
+      var img = document.createElement("img");
+      img.src = activity.imageDataUrl;
+      wrap.appendChild(img);
+
+      var fsBtn = document.createElement("button");
+      fsBtn.className = "hotspot-fullscreen-btn";
+      fsBtn.textContent = "⛶ Full screen";
+      fsBtn.title = "View full screen";
+      fsBtn.addEventListener("click", function(e){
+        e.stopPropagation();
+        openHotspotFullscreen(activity);
       });
-      header.appendChild(deleteBtn);
-      activityEl.appendChild(header);
+      wrap.appendChild(fsBtn);
 
-      if(!activity.imageDataUrl){
-        var uploadHint = document.createElement("div");
-        uploadHint.className = "hotspot-add-hint";
-        uploadHint.textContent = "Upload an image, then click on it to drop hotspot markers.";
-        activityEl.appendChild(uploadHint);
-
-        var fileInput = document.createElement("input");
-        fileInput.type = "file";
-        fileInput.accept = "image/*";
-        fileInput.addEventListener("change", function(){
-          var file = fileInput.files[0];
-          if(!file) return;
-          readFileAsImage(file, function(dataUrl){
-            activity.imageDataUrl = dataUrl;
-            persist(); renderHotspotActivities(ctx);
-          });
-        });
-        activityEl.appendChild(fileInput);
-      } else {
-        var editing = !!hotspotEditingSet[activity.id];
-        if(editing){
-          var editHint = document.createElement("div");
-          editHint.className = "hotspot-add-hint";
-          editHint.textContent = "Click anywhere on the image to add a hotspot marker. Click an existing marker to remove it.";
-          activityEl.appendChild(editHint);
-        }
-
-        var wrap = document.createElement("div");
-        wrap.className = "hotspot-image-wrap" + (editing ? "" : " view-mode");
-        var img = document.createElement("img");
-        img.src = activity.imageDataUrl;
-        wrap.appendChild(img);
-
-        var fsBtn = document.createElement("button");
-        fsBtn.className = "hotspot-fullscreen-btn";
-        fsBtn.textContent = "⛶ Full screen";
-        fsBtn.title = "View full screen";
-        fsBtn.addEventListener("click", function(e){
+      activity.hotspots.forEach(function(hotspot, i){
+        var marker = document.createElement("div");
+        marker.className = "hotspot-marker";
+        marker.style.left = hotspot.xPercent + "%";
+        marker.style.top = hotspot.yPercent + "%";
+        marker.textContent = (i+1);
+        marker.addEventListener("click", function(e){
           e.stopPropagation();
-          openHotspotFullscreen(activity);
-        });
-        wrap.appendChild(fsBtn);
-
-        activity.hotspots.forEach(function(hotspot, i){
-          var marker = document.createElement("div");
-          marker.className = "hotspot-marker";
-          marker.style.left = hotspot.xPercent + "%";
-          marker.style.top = hotspot.yPercent + "%";
-          marker.textContent = (i+1);
-          marker.addEventListener("click", function(e){
-            e.stopPropagation();
-            if(editing){
-              if(confirm("Remove this hotspot marker?")){
-                activity.hotspots = activity.hotspots.filter(function(h){ return h.id !== hotspot.id; });
-                persist(); renderHotspotActivities(ctx);
-              }
-            } else {
-              hotspotOpenPopup[activity.id] = (hotspotOpenPopup[activity.id] === hotspot.id) ? null : hotspot.id;
-              renderHotspotActivities(ctx);
+          if(editing){
+            if(confirm("Remove this hotspot marker?")){
+              activity.hotspots = activity.hotspots.filter(function(h){ return h.id !== hotspot.id; });
+              persist(); renderHotspotActivityInto(activity, container, ctx);
             }
-          });
-          wrap.appendChild(marker);
-
-          if(!editing && hotspotOpenPopup[activity.id] === hotspot.id){
-            var popup = document.createElement("div");
-            popup.className = "hotspot-popup";
-            popup.style.left = hotspot.xPercent + "%";
-            popup.style.top = hotspot.yPercent + "%";
-            popup.innerHTML = (hotspot.label ? "<h5></h5>" : "") + "<p></p><button class=\"hotspot-popup-close\">✕</button>";
-            if(hotspot.label) popup.querySelector("h5").textContent = hotspot.label;
-            popup.querySelector("p").textContent = hotspot.info || "";
-            popup.querySelector(".hotspot-popup-close").addEventListener("click", function(e){
-              e.stopPropagation();
-              hotspotOpenPopup[activity.id] = null;
-              renderHotspotActivities(ctx);
-            });
-            wrap.appendChild(popup);
+          } else {
+            hotspotOpenPopup[activity.id] = (hotspotOpenPopup[activity.id] === hotspot.id) ? null : hotspot.id;
+            renderHotspotActivityInto(activity, container, ctx);
           }
         });
+        wrap.appendChild(marker);
 
-        if(editing){
-          wrap.addEventListener("click", function(e){
-            if(e.target !== img) return;
-            var rect = img.getBoundingClientRect();
-            var xPct = ((e.clientX - rect.left) / rect.width) * 100;
-            var yPct = ((e.clientY - rect.top) / rect.height) * 100;
-            activity.hotspots.push({ id:uid(), xPercent:xPct, yPercent:yPct, label:"", info:"" });
-            persist(); renderHotspotActivities(ctx);
+        if(!editing && hotspotOpenPopup[activity.id] === hotspot.id){
+          var popup = document.createElement("div");
+          popup.className = "hotspot-popup";
+          popup.style.left = hotspot.xPercent + "%";
+          popup.style.top = hotspot.yPercent + "%";
+          popup.innerHTML = (hotspot.label ? "<h5></h5>" : "") + "<p></p><button class=\"hotspot-popup-close\">✕</button>";
+          if(hotspot.label) popup.querySelector("h5").textContent = hotspot.label;
+          popup.querySelector("p").textContent = hotspot.info || "";
+          popup.querySelector(".hotspot-popup-close").addEventListener("click", function(e){
+            e.stopPropagation();
+            hotspotOpenPopup[activity.id] = null;
+            renderHotspotActivityInto(activity, container, ctx);
           });
+          wrap.appendChild(popup);
         }
+      });
 
-        activityEl.appendChild(wrap);
-
-        if(editing && activity.hotspots.length){
-          var editList = document.createElement("div");
-          editList.className = "hotspot-edit-list";
-          activity.hotspots.forEach(function(hotspot, i){
-            var item = document.createElement("div");
-            item.className = "hotspot-edit-item";
-            item.innerHTML =
-              '<div class="hotspot-edit-fields">' +
-                '<input type="text" class="hotspot-label-input" placeholder="Label, e.g. Brian (client)">' +
-                '<textarea class="hotspot-info-input" rows="2" placeholder="Info revealed when clicked, in your own words…"></textarea>' +
-              '</div>';
-            var labelInput = item.querySelector(".hotspot-label-input");
-            var infoInput = item.querySelector(".hotspot-info-input");
-            labelInput.value = hotspot.label || "";
-            infoInput.value = hotspot.info || "";
-            labelInput.addEventListener("input", function(){
-              hotspot.label = labelInput.value;
-              scheduleSave(function(){ ctx.day.updated = Date.now(); });
-            });
-            infoInput.addEventListener("input", function(){
-              hotspot.info = infoInput.value;
-              scheduleSave(function(){ ctx.day.updated = Date.now(); });
-            });
-            editList.appendChild(item);
-          });
-          activityEl.appendChild(editList);
-        }
+      if(editing){
+        wrap.addEventListener("click", function(e){
+          if(e.target !== img) return;
+          var rect = img.getBoundingClientRect();
+          var xPct = ((e.clientX - rect.left) / rect.width) * 100;
+          var yPct = ((e.clientY - rect.top) / rect.height) * 100;
+          activity.hotspots.push({ id:uid(), xPercent:xPct, yPercent:yPct, label:"", info:"" });
+          persist(); renderHotspotActivityInto(activity, container, ctx);
+        });
       }
 
-      listEl.appendChild(activityEl);
+      activityEl.appendChild(wrap);
+
+      if(editing && activity.hotspots.length){
+        var editList = document.createElement("div");
+        editList.className = "hotspot-edit-list";
+        activity.hotspots.forEach(function(hotspot, i){
+          var item = document.createElement("div");
+          item.className = "hotspot-edit-item";
+          item.innerHTML =
+            '<div class="hotspot-edit-fields">' +
+              '<input type="text" class="hotspot-label-input" placeholder="Label, e.g. Brian (client)">' +
+              '<textarea class="hotspot-info-input" rows="2" placeholder="Info revealed when clicked, in your own words…"></textarea>' +
+            '</div>';
+          var labelInput = item.querySelector(".hotspot-label-input");
+          var infoInput = item.querySelector(".hotspot-info-input");
+          labelInput.value = hotspot.label || "";
+          infoInput.value = hotspot.info || "";
+          labelInput.addEventListener("input", function(){
+            hotspot.label = labelInput.value;
+            scheduleSave(function(){ ctx.day.updated = Date.now(); });
+          });
+          infoInput.addEventListener("input", function(){
+            hotspot.info = infoInput.value;
+            scheduleSave(function(){ ctx.day.updated = Date.now(); });
+          });
+          editList.appendChild(item);
+        });
+        activityEl.appendChild(editList);
+      }
+    }
+
+    container.appendChild(activityEl);
+  }
+
+  // ================= EMBEDDED WIDGETS (inserted into free-writing areas) =================
+  // A "chip" is a small non-editable block placed inline in the Notes text. Clicking it opens
+  // the full interactive slideshow/hotspot activity in a modal. The chip itself never stores
+  // the live interactive markup — only a lightweight reference — so typing elsewhere in the
+  // notes never risks corrupting the widget's content.
+  var widgetModalBackdrop, widgetModalBody, widgetModalCloseBtn;
+
+  function buildEmbeddedChipHtml(type, id, name){
+    var icon = type === "slideshow" ? "▶" : "📍";
+    var fallback = type === "slideshow" ? "Untitled slideshow" : "Untitled image activity";
+    return '<div class="embedded-widget-chip" contenteditable="false" data-widget-type="' + type + '" data-widget-id="' + id + '">' +
+      '<span class="chip-icon">' + icon + '</span><span class="chip-label">' + escapeHtml(name || fallback) + '</span>' +
+      '<span class="chip-hint">Click to open</span></div><p><br></p>';
+  }
+
+  function insertEmbeddedWidget(type){
+    if(!activeEditable){ alert("Click into the Notes area first, then try again."); return; }
+    var ctx = activeDayCtx();
+    if(!ctx){ return; }
+    var id = uid();
+    if(type === "slideshow"){
+      ctx.day.slideshows = ctx.day.slideshows || [];
+      ctx.day.slideshows.push({ id:id, name:"", slides:[] });
+    } else {
+      ctx.day.hotspotActivities = ctx.day.hotspotActivities || [];
+      ctx.day.hotspotActivities.push({ id:id, name:"", imageDataUrl:"", hotspots:[] });
+    }
+    activeEditable.focus();
+    document.execCommand("insertHTML", false, buildEmbeddedChipHtml(type, id, ""));
+    activeEditable.dispatchEvent(new Event("input"));
+    persist();
+    openWidgetModal(type, id, ctx);
+  }
+
+  function refreshEmbeddedChipLabels(ctx){
+    [notesAreaEl(), reflectionAreaEl(), sourceAreaEl()].forEach(function(area){
+      if(!area) return;
+      var changed = false;
+      area.querySelectorAll(".embedded-widget-chip").forEach(function(chip){
+        var type = chip.getAttribute("data-widget-type");
+        var id = chip.getAttribute("data-widget-id");
+        var item = type === "slideshow"
+          ? (ctx.day.slideshows || []).find(function(d){ return d.id === id; })
+          : (ctx.day.hotspotActivities || []).find(function(a){ return a.id === id; });
+        var labelEl = chip.querySelector(".chip-label");
+        var newLabel = item ? (item.name || (type === "slideshow" ? "Untitled slideshow" : "Untitled image activity")) : "(deleted — click to remove)";
+        if(labelEl && labelEl.textContent !== newLabel){ labelEl.textContent = newLabel; changed = true; }
+      });
+      if(changed) area.dispatchEvent(new Event("input"));
     });
   }
-  document.addEventListener("click", function(e){
-    if(e.target && e.target.id === "add-hotspot-activity-btn"){
+  function notesAreaEl(){ return document.getElementById("notes-area"); }
+  function reflectionAreaEl(){ return document.getElementById("reflection-area"); }
+  function sourceAreaEl(){ return document.getElementById("source-area"); }
+
+  function openWidgetModal(type, id, ctx){
+    var item = type === "slideshow"
+      ? (ctx.day.slideshows || []).find(function(d){ return d.id === id; })
+      : (ctx.day.hotspotActivities || []).find(function(a){ return a.id === id; });
+    if(!item){
+      alert("This " + (type === "slideshow" ? "slideshow" : "image activity") + " no longer exists — it may have been deleted.");
+      return;
+    }
+    widgetModalBody.innerHTML = "";
+    if(type === "slideshow") renderSlideshowDeckInto(item, widgetModalBody, ctx);
+    else renderHotspotActivityInto(item, widgetModalBody, ctx);
+    widgetModalBackdrop.classList.add("show");
+  }
+
+  function initEmbeddedWidgetSystem(){
+    widgetModalBackdrop = document.getElementById("widget-modal-backdrop");
+    widgetModalBody = document.getElementById("widget-modal-body");
+    widgetModalCloseBtn = document.getElementById("widget-modal-close-btn");
+
+    widgetModalCloseBtn.addEventListener("click", function(){
+      widgetModalBackdrop.classList.remove("show");
       var ctx = activeDayCtx();
-      if(!ctx) return;
-      ctx.day.hotspotActivities = ctx.day.hotspotActivities || [];
-      ctx.day.hotspotActivities.push({ id:uid(), name:"", imageDataUrl:"", hotspots:[] });
-      persist();
-      renderHotspotActivities(ctx);
+      if(ctx) refreshEmbeddedChipLabels(ctx);
+    });
+    widgetModalBackdrop.addEventListener("click", function(e){
+      if(e.target === widgetModalBackdrop){
+        widgetModalBackdrop.classList.remove("show");
+        var ctx = activeDayCtx();
+        if(ctx) refreshEmbeddedChipLabels(ctx);
+      }
+    });
+
+    document.addEventListener("click", function(e){
+      if(e.target && e.target.id === "insert-slideshow-btn"){ insertEmbeddedWidget("slideshow"); }
+      if(e.target && e.target.id === "insert-hotspot-btn"){ insertEmbeddedWidget("hotspot"); }
+      var chip = e.target && e.target.closest ? e.target.closest(".embedded-widget-chip") : null;
+      if(chip){
+        var ctx = activeDayCtx();
+        if(!ctx) return;
+        openWidgetModal(chip.getAttribute("data-widget-type"), chip.getAttribute("data-widget-id"), ctx);
+      }
+    });
+  }
+  initEmbeddedWidgetSystem();
+
+  // ================= LINK / CHECKLIST / TABLE =================
+  function insertLinkAtCursor(){
+    if(!activeEditable){ alert("Click into the text area first, then try again."); return; }
+    activeEditable.focus();
+    var url = prompt("Paste or type the link URL:");
+    if(!url) return;
+    if(!/^https?:\/\//i.test(url) && !/^mailto:/i.test(url)) url = "https://" + url;
+    var sel = window.getSelection();
+    var hasSelection = sel && sel.rangeCount && !sel.isCollapsed && activeEditable.contains(sel.anchorNode);
+    if(hasSelection){
+      document.execCommand("createLink", false, url);
+    } else {
+      var linkText = prompt("Text to display for the link (leave blank to show the URL itself):", "") || url;
+      document.execCommand("insertHTML", false, '<a href="' + url + '" target="_blank" rel="noopener">' + escapeHtml(linkText) + '</a>');
+    }
+    activeEditable.dispatchEvent(new Event("input"));
+  }
+
+  function insertChecklistItem(){
+    if(!activeEditable){ alert("Click into the text area first, then try again."); return; }
+    activeEditable.focus();
+    var html = '<div class="todo-item"><input type="checkbox" class="todo-checkbox"><span>To-do item…</span></div><p><br></p>';
+    document.execCommand("insertHTML", false, html);
+    activeEditable.dispatchEvent(new Event("input"));
+  }
+
+  function insertTableAtCursor(){
+    if(!activeEditable){ alert("Click into the text area first, then try again."); return; }
+    activeEditable.focus();
+    var html =
+      '<table>' +
+        '<tr><th>Header 1</th><th>Header 2</th><th>Header 3</th></tr>' +
+        '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>' +
+        '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>' +
+      '</table><p><br></p>';
+    document.execCommand("insertHTML", false, html);
+    activeEditable.dispatchEvent(new Event("input"));
+  }
+
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "insert-link-btn") insertLinkAtCursor();
+    if(e.target && e.target.id === "insert-checklist-btn") insertChecklistItem();
+    if(e.target && e.target.id === "insert-table-btn") insertTableAtCursor();
+  });
+
+  // Checkbox toggling inside checklist items — delegated since execCommand-inserted
+  // checkboxes have no listeners of their own. Re-uses each rich-editable's existing
+  // "input" handler (already wired per view) to persist the change.
+  document.addEventListener("change", function(e){
+    if(e.target && e.target.classList && e.target.classList.contains("todo-checkbox")){
+      var item = e.target.closest(".todo-item");
+      if(item) item.classList.toggle("todo-checked", e.target.checked);
+      var richEditable = e.target.closest(".rich-editable");
+      if(richEditable) richEditable.dispatchEvent(new Event("input"));
+    }
+  });
+
+  // ================= LINK TO LIBRARY CHAPTER =================
+  function openLinkChapterModal(){
+    if(!activeEditable){ alert("Click into the Notes area first, then try again."); return; }
+    if(!data.books.length){ alert("Add a book to your Library first, then you can link notes to its chapters."); return; }
+    var select = document.getElementById("link-chapter-select");
+    select.innerHTML = buildChapterOptionsHtml("");
+    document.getElementById("link-chapter-modal-backdrop").classList.add("show");
+  }
+  document.getElementById("link-chapter-insert-btn").addEventListener("click", function(){
+    var chapterId = document.getElementById("link-chapter-select").value;
+    if(!chapterId){ alert("Pick a chapter first."); return; }
+    var found = findBookForChapterId(chapterId);
+    if(!found){ alert("Couldn't find that chapter."); return; }
+    var chipHtml = '<div class="chapter-link-chip" contenteditable="false" data-chapter-id="' + chapterId + '">' +
+      '<span class="chip-icon">📖</span><span class="chip-label">' + escapeHtml(found.book.title + " — " + (found.chapter.title || "Untitled")) + '</span>' +
+      '</div><p><br></p>';
+    activeEditable.focus();
+    document.execCommand("insertHTML", false, chipHtml);
+    activeEditable.dispatchEvent(new Event("input"));
+    document.getElementById("link-chapter-modal-backdrop").classList.remove("show");
+  });
+  document.getElementById("link-chapter-cancel-btn").addEventListener("click", function(){
+    document.getElementById("link-chapter-modal-backdrop").classList.remove("show");
+  });
+  document.getElementById("link-chapter-modal-backdrop").addEventListener("click", function(e){
+    if(e.target === this) this.classList.remove("show");
+  });
+
+  // ================= SCHOLARLY SOURCE SEARCH (CrossRef) =================
+  function renderSourceResults(items){
+    var container = document.getElementById("source-search-results");
+    container.innerHTML = "";
+    if(!items.length){
+      container.innerHTML = '<div style="font-family: system-ui, sans-serif; font-size:12px; color:var(--ink-soft);">No results found — try a different search phrase.</div>';
+      return;
+    }
+    items.forEach(function(item){
+      var title = (item.title && item.title[0]) || "Untitled";
+      var journal = (item["container-title"] && item["container-title"][0]) || "";
+      var year = (item.issued && item.issued["date-parts"] && item.issued["date-parts"][0] && item.issued["date-parts"][0][0]) || "";
+      var authors = (item.author || []).slice(0,3).map(function(a){ return (a.family || a.name || "").trim(); }).filter(Boolean).join(", ");
+      var doi = item.DOI;
+      var row = document.createElement("div");
+      row.className = "source-result-item";
+      var titleDiv = document.createElement("div");
+      titleDiv.className = "sr-title";
+      titleDiv.textContent = title;
+      var metaDiv = document.createElement("div");
+      metaDiv.className = "sr-meta";
+      metaDiv.textContent = [authors, journal, year].filter(Boolean).join(" · ") || "No further details available";
+      var insertBtn = document.createElement("button");
+      insertBtn.className = "add-objective-btn";
+      insertBtn.textContent = "+ Insert into notes";
+      insertBtn.addEventListener("click", function(){ insertSourceLink(title, authors, journal, year, doi); });
+      row.appendChild(titleDiv);
+      row.appendChild(metaDiv);
+      row.appendChild(insertBtn);
+      container.appendChild(row);
+    });
+  }
+  function insertSourceLink(title, authors, journal, year, doi){
+    if(!activeEditable){ alert("Click into the Notes area first, then search again."); return; }
+    activeEditable.focus();
+    var url = doi ? ("https://doi.org/" + doi) : "";
+    var citeText = (authors ? authors + " " : "") + (year ? "(" + year + "). " : "") + title + (journal ? ". " + journal + "." : "");
+    var html = url
+      ? '<a href="' + url + '" target="_blank" rel="noopener">' + escapeHtml(citeText) + '</a><br>'
+      : escapeHtml(citeText) + '<br>';
+    document.execCommand("insertHTML", false, html);
+    activeEditable.dispatchEvent(new Event("input"));
+  }
+  function runSourceSearch(){
+    var query = document.getElementById("source-search-input").value.trim();
+    if(!query) return;
+    var statusEl = document.getElementById("source-search-status");
+    statusEl.textContent = "Searching CrossRef…";
+    document.getElementById("source-search-results").innerHTML = "";
+    fetch("https://api.crossref.org/works?query=" + encodeURIComponent(query) + "&rows=6&select=title,author,container-title,issued,DOI")
+      .then(function(res){ if(!res.ok) throw new Error("Request failed: " + res.status); return res.json(); })
+      .then(function(data){
+        var items = (data.message && data.message.items) || [];
+        statusEl.textContent = items.length ? (items.length + " result" + (items.length === 1 ? "" : "s") + " from CrossRef") : "No results found.";
+        renderSourceResults(items);
+      })
+      .catch(function(err){
+        console.error("CrossRef search failed", err);
+        statusEl.textContent = "Search failed — check your internet connection and try again.";
+      });
+  }
+  function openSourceSearchModal(){
+    if(!activeEditable){ alert("Click into the Notes area first, then try again."); return; }
+    var prefill = "";
+    if(state.mode === "planner"){
+      var ctx = activeDayCtx();
+      if(ctx && ctx.day.topic) prefill = ctx.day.topic;
+    } else if(state.mode === "library"){
+      var lctx = activeChapterCtx();
+      if(lctx && lctx.chapter.title) prefill = lctx.chapter.title;
+    }
+    document.getElementById("source-search-input").value = prefill;
+    document.getElementById("source-search-status").textContent = "";
+    document.getElementById("source-search-results").innerHTML = "";
+    document.getElementById("source-search-modal-backdrop").classList.add("show");
+  }
+  document.getElementById("source-search-btn").addEventListener("click", runSourceSearch);
+  document.getElementById("source-search-input").addEventListener("keydown", function(e){
+    if(e.key === "Enter"){ e.preventDefault(); runSourceSearch(); }
+  });
+  document.getElementById("source-search-close-btn").addEventListener("click", function(){
+    document.getElementById("source-search-modal-backdrop").classList.remove("show");
+  });
+  document.getElementById("source-search-modal-backdrop").addEventListener("click", function(e){
+    if(e.target === this) this.classList.remove("show");
+  });
+
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "link-chapter-btn") openLinkChapterModal();
+    if(e.target && e.target.id === "find-sources-btn") openSourceSearchModal();
+    var chapChip = e.target && e.target.closest ? e.target.closest(".chapter-link-chip") : null;
+    if(chapChip){
+      var chapterId = chapChip.getAttribute("data-chapter-id");
+      var found = findBookForChapterId(chapterId);
+      if(!found){ alert("This chapter link no longer exists — it may have been deleted."); return; }
+      setMode("library");
+      state.openBookId = found.book.id;
+      state.activeChapterId = found.chapter.id;
+      renderTree(); renderMain();
+    }
+  });
+
+  // ================= OUTLINE NAVIGATOR =================
+  function openOutlinePopup(){
+    var existing = document.getElementById("outline-popup");
+    if(existing) existing.remove();
+    if(!activeEditable){ alert("Click into a notes area first."); return; }
+    var headings = activeEditable.querySelectorAll("h2");
+    var popup = document.createElement("div");
+    popup.id = "outline-popup";
+    popup.className = "outline-popup";
+    if(!headings.length){
+      popup.innerHTML = '<div class="outline-popup-empty">No headings yet — use the "Heading" button to structure your note, then they\'ll show up here.</div>';
+    } else {
+      headings.forEach(function(h, i){
+        var item = document.createElement("div");
+        item.className = "outline-popup-item";
+        item.textContent = (i+1) + ". " + (h.textContent.trim() || "Untitled heading");
+        item.addEventListener("click", function(){
+          h.scrollIntoView({ behavior:"smooth", block:"center" });
+          h.classList.add("flash-highlight");
+          setTimeout(function(){ h.classList.remove("flash-highlight"); }, 1400);
+          popup.remove();
+        });
+        popup.appendChild(item);
+      });
+    }
+    document.body.appendChild(popup);
+    var btn = document.getElementById("outline-btn");
+    if(btn){
+      var rect = btn.getBoundingClientRect();
+      popup.style.top = Math.min(rect.bottom + 6, window.innerHeight - 80) + "px";
+      popup.style.left = Math.min(rect.left, window.innerWidth - 300) + "px";
+    }
+    setTimeout(function(){
+      document.addEventListener("click", function closeOutline(e){
+        if(popup.parentNode && !popup.contains(e.target) && e.target !== btn){
+          popup.remove();
+          document.removeEventListener("click", closeOutline);
+        }
+      });
+    }, 0);
+  }
+
+  // ================= FOCUS MODE =================
+  function toggleFocusMode(){
+    var on = document.body.classList.toggle("focus-mode");
+    document.getElementById("focus-mode-exit-btn").style.display = on ? "block" : "none";
+  }
+  document.getElementById("focus-mode-exit-btn").addEventListener("click", toggleFocusMode);
+
+  // ================= READ ALOUD =================
+  var currentUtterance = null;
+  function toggleReadAloud(){
+    var btn = document.getElementById("read-aloud-btn");
+    if(!("speechSynthesis" in window)){
+      alert("Read aloud isn't supported in this browser — try Chrome, Edge, or Safari.");
+      return;
+    }
+    if(window.speechSynthesis.speaking){
+      window.speechSynthesis.cancel();
+      if(btn) btn.textContent = "🔊 Read aloud";
+      return;
+    }
+    if(!activeEditable){ alert("Click into a notes area first, then try again."); return; }
+    var text = activeEditable.textContent.trim();
+    if(!text){ alert("There's nothing to read yet."); return; }
+    currentUtterance = new SpeechSynthesisUtterance(text);
+    currentUtterance.onend = function(){ if(btn) btn.textContent = "🔊 Read aloud"; };
+    currentUtterance.onerror = function(){ if(btn) btn.textContent = "🔊 Read aloud"; };
+    window.speechSynthesis.speak(currentUtterance);
+    if(btn) btn.textContent = "⏹ Stop reading";
+  }
+
+  // ================= VOICE DICTATION =================
+  var dictationRecognition = null;
+  var isDictating = false;
+  function toggleDictation(){
+    var btn = document.getElementById("dictate-btn");
+    var SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SpeechRecognitionCtor){
+      alert("Voice dictation isn't supported in this browser — try Chrome or Edge on desktop or Android.");
+      return;
+    }
+    if(isDictating){
+      if(dictationRecognition) dictationRecognition.stop();
+      return;
+    }
+    if(!activeEditable){ alert("Click into a notes area first, then try again."); return; }
+    activeEditable.focus();
+    dictationRecognition = new SpeechRecognitionCtor();
+    dictationRecognition.continuous = true;
+    dictationRecognition.interimResults = false;
+    dictationRecognition.lang = "en-US";
+    dictationRecognition.onstart = function(){
+      isDictating = true;
+      if(btn) btn.textContent = "⏹ Stop dictating";
+    };
+    dictationRecognition.onresult = function(event){
+      var transcript = "";
+      for(var i = event.resultIndex; i < event.results.length; i++){
+        if(event.results[i].isFinal) transcript += event.results[i][0].transcript;
+      }
+      if(transcript && activeEditable){
+        activeEditable.focus();
+        document.execCommand("insertText", false, transcript + " ");
+        activeEditable.dispatchEvent(new Event("input"));
+      }
+    };
+    dictationRecognition.onerror = function(err){
+      console.error("Dictation error", err);
+      isDictating = false;
+      if(btn) btn.textContent = "🎤 Dictate";
+    };
+    dictationRecognition.onend = function(){
+      isDictating = false;
+      if(btn) btn.textContent = "🎤 Dictate";
+    };
+    dictationRecognition.start();
+  }
+
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "outline-btn") openOutlinePopup();
+    if(e.target && e.target.id === "focus-mode-btn") toggleFocusMode();
+    if(e.target && e.target.id === "read-aloud-btn") toggleReadAloud();
+    if(e.target && e.target.id === "dictate-btn") toggleDictation();
+  });
+
+  // ================= TEXT SHORTCUTS =================
+  var TEXT_SHORTCUTS_KEY = "counsellingStudyToolkit_textShortcuts";
+  function getTextShortcuts(){
+    try{ return JSON.parse(localStorage.getItem(TEXT_SHORTCUTS_KEY) || "{}"); }
+    catch(e){ return {}; }
+  }
+  function saveTextShortcuts(obj){
+    try{ localStorage.setItem(TEXT_SHORTCUTS_KEY, JSON.stringify(obj)); }catch(e){}
+  }
+  function renderTextShortcutsList(){
+    var listEl = document.getElementById("text-shortcuts-list");
+    var shortcuts = getTextShortcuts();
+    var keys = Object.keys(shortcuts);
+    listEl.innerHTML = "";
+    if(!keys.length){
+      listEl.innerHTML = '<div style="font-family: system-ui, sans-serif; font-size:12px; color:var(--ink-soft); margin-bottom:8px;">No shortcuts yet.</div>';
+    }
+    keys.forEach(function(key){
+      var row = document.createElement("div");
+      row.className = "shortcut-row";
+      row.innerHTML =
+        '<input type="text" class="shortcut-key-input" placeholder="cl">' +
+        '<span style="color:var(--ink-soft);">→</span>' +
+        '<input type="text" class="shortcut-val-input" placeholder="client">' +
+        '<button class="remove-reading" title="Remove">✕</button>';
+      var keyInput = row.querySelector(".shortcut-key-input");
+      var valInput = row.querySelector(".shortcut-val-input");
+      keyInput.value = key;
+      valInput.value = shortcuts[key];
+      function commit(){
+        var s = getTextShortcuts();
+        delete s[key];
+        var newKey = keyInput.value.trim().toLowerCase();
+        if(newKey) s[newKey] = valInput.value;
+        saveTextShortcuts(s);
+      }
+      keyInput.addEventListener("change", function(){ commit(); renderTextShortcutsList(); });
+      valInput.addEventListener("input", function(){
+        var s = getTextShortcuts();
+        s[key] = valInput.value;
+        saveTextShortcuts(s);
+      });
+      row.querySelector(".remove-reading").addEventListener("click", function(){
+        var s = getTextShortcuts();
+        delete s[key];
+        saveTextShortcuts(s);
+        renderTextShortcutsList();
+      });
+      listEl.appendChild(row);
+    });
+  }
+  document.getElementById("text-shortcuts-btn").addEventListener("click", function(){
+    renderTextShortcutsList();
+    document.getElementById("text-shortcuts-modal-backdrop").classList.add("show");
+  });
+  document.getElementById("add-text-shortcut-btn").addEventListener("click", function(){
+    var s = getTextShortcuts();
+    var n = 1;
+    while(s["shortcut" + n] !== undefined) n++;
+    s["new" + n] = "";
+    saveTextShortcuts(s);
+    renderTextShortcutsList();
+  });
+  document.getElementById("text-shortcuts-close-btn").addEventListener("click", function(){
+    document.getElementById("text-shortcuts-modal-backdrop").classList.remove("show");
+  });
+  document.getElementById("text-shortcuts-modal-backdrop").addEventListener("click", function(e){
+    if(e.target === this) this.classList.remove("show");
+  });
+
+  function checkTextShortcutExpansion(e){
+    if(e.key !== " ") return;
+    if(!activeEditable) return;
+    var sel = window.getSelection();
+    if(!sel || !sel.rangeCount) return;
+    var node = sel.anchorNode;
+    if(!node || node.nodeType !== 3) return;
+    if(!activeEditable.contains(node)) return;
+    var offset = sel.anchorOffset;
+    var textBeforeCursor = node.textContent.slice(0, offset);
+    var m = textBeforeCursor.match(/(\S+)\s$/);
+    if(!m) return;
+    var word = m[1];
+    var shortcuts = getTextShortcuts();
+    var expansion = shortcuts[word.toLowerCase()];
+    if(expansion === undefined || expansion === "") return;
+    var wordStart = offset - 1 - word.length;
+    var range = document.createRange();
+    range.setStart(node, wordStart);
+    range.setEnd(node, offset);
+    range.deleteContents();
+    var textNode = document.createTextNode(expansion + " ");
+    range.insertNode(textNode);
+    range.setStartAfter(textNode);
+    range.setEndAfter(textNode);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    activeEditable.dispatchEvent(new Event("input"));
+  }
+  document.addEventListener("keyup", checkTextShortcutExpansion);
+
+  // ================= REFERENCE LIST COMPILER =================
+  function collectUnitReferences(unit){
+    var seen = {};
+    var refs = [];
+    function scan(html){
+      if(!html) return;
+      var tmp = document.createElement("div");
+      tmp.innerHTML = html;
+      tmp.querySelectorAll('a[href^="https://doi.org/"]').forEach(function(a){
+        var href = a.getAttribute("href");
+        var text = a.textContent.trim();
+        if(!seen[href]){
+          seen[href] = true;
+          refs.push({ text: text || href, href: href });
+        }
+      });
+    }
+    unit.weeks.forEach(function(w){
+      w.days.forEach(function(day){
+        scan(day.notes); scan(day.reflection); scan(day.sourceText);
+      });
+    });
+    refs.sort(function(a,b){ return a.text.localeCompare(b.text); });
+    return refs;
+  }
+  function openReferenceListModal(unit){
+    var refs = collectUnitReferences(unit);
+    var body = document.getElementById("reference-list-body");
+    if(!refs.length){
+      body.innerHTML = '<div style="color:var(--ink-soft);">No sources found yet — insert some via the 📚 Sources search in a day\'s notes, then come back here.</div>';
+    } else {
+      body.innerHTML = refs.map(function(r){
+        return '<div class="reference-list-item">' + escapeHtml(r.text) + ' — <a href="' + r.href + '" target="_blank" rel="noopener" style="color:var(--terracotta);">' + r.href + '</a></div>';
+      }).join("");
+    }
+    document.getElementById("reference-list-modal-backdrop").dataset.refs = JSON.stringify(refs);
+    document.getElementById("reference-list-modal-backdrop").classList.add("show");
+  }
+  document.getElementById("reference-list-close-btn").addEventListener("click", function(){
+    document.getElementById("reference-list-modal-backdrop").classList.remove("show");
+  });
+  document.getElementById("reference-list-modal-backdrop").addEventListener("click", function(e){
+    if(e.target === this) this.classList.remove("show");
+  });
+  document.getElementById("reference-list-copy-btn").addEventListener("click", function(){
+    var refs = JSON.parse(document.getElementById("reference-list-modal-backdrop").dataset.refs || "[]");
+    var text = refs.map(function(r){ return r.text + " — " + r.href; }).join("\n");
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){
+        showSaveConfirmToast("📋 Reference list copied");
+      }).catch(function(){ prompt("Copy this reference list:", text); });
+    } else {
+      prompt("Copy this reference list:", text);
     }
   });
 
@@ -1890,15 +2567,25 @@
   });
   document.addEventListener("paste", function(e){
     if(!activeEditable || document.activeElement !== activeEditable) return;
-    var items = (e.clipboardData || window.clipboardData).items;
-    if(!items) return;
-    for(var i=0;i<items.length;i++){
-      if(items[i].type.indexOf("image/") === 0){
-        e.preventDefault();
-        var file = items[i].getAsFile();
-        readFileAsImage(file, insertImageDataUrl);
-        return;
+    var clipboardData = e.clipboardData || window.clipboardData;
+    var items = clipboardData.items;
+    if(items){
+      for(var i=0;i<items.length;i++){
+        if(items[i].type.indexOf("image/") === 0){
+          e.preventDefault();
+          var file = items[i].getAsFile();
+          readFileAsImage(file, insertImageDataUrl);
+          return;
+        }
       }
+    }
+    // Paste as plain text by default — strips fonts/colors/styles carried over from Word,
+    // Canvas, or web pages, so pasted content matches the rest of your notes.
+    var text = clipboardData.getData("text/plain");
+    if(text){
+      e.preventDefault();
+      document.execCommand("insertText", false, text);
+      activeEditable.dispatchEvent(new Event("input"));
     }
   });
   document.addEventListener("keydown", function(e){
@@ -2109,6 +2796,20 @@
           });
           dayRow.appendChild(di);
 
+          var addTopicBtn = document.createElement("button");
+          addTopicBtn.className = "day-move-btn";
+          addTopicBtn.title = "Add another topic for " + day.label;
+          addTopicBtn.textContent = "+";
+          addTopicBtn.addEventListener("click", function(e){
+            e.stopPropagation();
+            var newDay = { id:uid(), label:day.label, topic:"", readings:[], objectives:[], qa:[], slideshows:[], hotspotActivities:[], sourceText:"", sourceRange:"", notes:"", reflection:"", done:false, updated:Date.now() };
+            var i = week.days.indexOf(day);
+            week.days.splice(i+1, 0, newDay);
+            state.activeDayId = newDay.id;
+            persist(); renderTree(); renderMain();
+          });
+          dayRow.appendChild(addTopicBtn);
+
           var moveSelect = document.createElement("select");
           moveSelect.className = "reading-link-select";
           moveSelect.style.maxWidth = "60px";
@@ -2285,6 +2986,7 @@
         '<button data-cmd="bold" title="Bold"><b>B</b></button>' +
         '<button data-cmd="italic" title="Italic"><i>I</i></button>' +
         '<button data-cmd="underline" title="Underline"><u>U</u></button>' +
+        '<button data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>' +
         '<div class="fmt-divider"></div>' +
         '<button data-cmd="formatBlock" data-val="H2" class="wide">Heading</button>' +
         '<button data-cmd="formatBlock" data-val="BLOCKQUOTE" class="wide">Quote</button>' +
@@ -2292,6 +2994,14 @@
         '<div class="fmt-divider"></div>' +
         '<button data-cmd="insertUnorderedList">•</button>' +
         '<button data-cmd="insertOrderedList">1.</button>' +
+        '<button data-cmd="outdent" title="Decrease indent">⇤</button>' +
+        '<button data-cmd="indent" title="Increase indent">⇥</button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button data-cmd="foreColor" data-val="#B5592E" class="text-color-swatch" style="color:#B5592E;" title="Terracotta text">A</button>' +
+        '<button data-cmd="foreColor" data-val="#4F5C44" class="text-color-swatch" style="color:#4F5C44;" title="Sage text">A</button>' +
+        '<button data-cmd="foreColor" data-val="#5B7A99" class="text-color-swatch" style="color:#5B7A99;" title="Blue text">A</button>' +
+        '<button data-cmd="foreColor" data-val="#8C6A9E" class="text-color-swatch" style="color:#8C6A9E;" title="Purple text">A</button>' +
+        '<button data-cmd="foreColor" data-val="#2E2A22" class="text-color-swatch" style="color:#2E2A22;" title="Default text colour">A</button>' +
         '<div class="fmt-divider"></div>' +
         '<button data-cmd="hiliteColor" data-val="#F5D98B" class="highlight-swatch" style="background:#F5D98B;" title="Yellow highlight">▧</button>' +
         '<button data-cmd="hiliteColor" data-val="#C9E4B0" class="highlight-swatch" style="background:#C9E4B0;" title="Green highlight">▧</button>' +
@@ -2300,11 +3010,24 @@
         '<button data-cmd="hiliteColor" data-val="#D9C7F0" class="highlight-swatch" style="background:#D9C7F0;" title="Purple highlight">▧</button>' +
         '<button data-cmd="removeFormat">✕</button>' +
         '<div class="fmt-divider"></div>' +
+        '<button class="wide" id="insert-link-btn" title="Insert a link">🔗 Link</button>' +
+        '<button class="wide" id="insert-checklist-btn" title="Insert a checklist item">☑ Checklist</button>' +
+        '<button class="wide" id="insert-table-btn" title="Insert a table">⊞ Table</button>' +
+        '<button data-cmd="insertHorizontalRule" class="wide" title="Insert a divider line">— Divider</button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button class="wide" id="outline-btn" title="Jump between headings in this note">☰ Outline</button>' +
+        '<button class="wide" id="focus-mode-btn" title="Distraction-free writing">🎯 Focus</button>' +
+        '<button class="wide" id="read-aloud-btn" title="Read this note aloud">🔊 Read aloud</button>' +
+        '<button class="wide" id="dictate-btn" title="Speak instead of typing">🎤 Dictate</button>' +
+        '<div class="fmt-divider"></div>' +
         '<button class="wide" id="insert-image-btn">🖼 Image</button>' +
+        '<button class="wide" id="insert-slideshow-btn" title="Insert a click-through slideshow into your notes">▶ Slideshow</button>' +
+        '<button class="wide" id="insert-hotspot-btn" title="Insert a clickable image with hotspots into your notes">📍 Hotspot image</button>' +
         '<div class="fmt-divider"></div>' +
         '<button class="wide danger" id="delete-day-btn">Delete day</button>' +
         '<div class="fmt-divider"></div>' +
         '<button class="wide" id="duplicate-day-btn">⧉ Duplicate</button>' +
+        '<button class="wide" id="new-topic-same-day-btn" title="Add a fresh, empty topic under this same day">+ New topic, same day</button>' +
         '<button class="wide" id="print-day-btn">🖨 Print</button>' +
       '</div>';
 
@@ -2356,6 +3079,14 @@
       persist(); renderTree(); renderMain();
     });
 
+    document.getElementById("new-topic-same-day-btn").addEventListener("click", function(){
+      var idx = ctx.week.days.indexOf(ctx.day);
+      var newDay = { id:uid(), label:ctx.day.label, topic:"", readings:[], objectives:[], qa:[], slideshows:[], hotspotActivities:[], sourceText:"", sourceRange:"", notes:"", reflection:"", done:false, updated:Date.now() };
+      ctx.week.days.splice(idx + 1, 0, newDay);
+      state.activeDayId = newDay.id;
+      persist(); renderTree(); renderMain();
+    });
+
     document.getElementById("delete-day-btn").addEventListener("click", function(){
       if(confirm('Delete "' + ctx.day.label + '"? (Undo available for a few seconds after.)')){
         var idx = ctx.week.days.indexOf(ctx.day);
@@ -2401,9 +3132,11 @@
         '</div>' +
         '<div class="split-col">' +
           '<div class="card" id="notes-card" style="flex:1; display:flex; flex-direction:column;">' +
-            '<h3><span>Notes</span><span class="word-count" id="notes-wc">0 words</span></h3>' +
-            '<div class="objective-tag-chips" id="objective-tag-chips"></div>' +
-            '<div class="rich-editable scrollable" id="notes-area" contenteditable="true" data-placeholder="What did the reading cover? Key concepts, models, terms…"></div>' +
+            '<h3><span>Notes</span><span style="display:flex; align-items:center; gap:8px;"><button class="card-collapse-btn" id="link-chapter-btn" title="Link this note to a Library chapter">🔗 Chapter</button><button class="card-collapse-btn" id="find-sources-btn" title="Search for peer-reviewed sources to add">📚 Sources</button><span class="word-count" id="notes-wc">0 words</span></span></h3>' +
+            '<div class="notes-body-row">' +
+              '<div class="objective-rail" id="objective-tag-chips"></div>' +
+              '<div class="rich-editable scrollable" id="notes-area" contenteditable="true" data-placeholder="What did the reading cover? Key concepts, models, terms…" style="flex:1;"></div>' +
+            '</div>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -2414,20 +3147,6 @@
           '<button class="add-qa-btn" id="add-qa-btn">+ Add a question</button>' +
         '</div>' +
       '</div>' +
-      '<div class="card" id="slideshows-card">' +
-        '<h3><span>Slideshows &amp; Scenarios</span><button class="card-collapse-btn" id="slideshows-collapse-btn"><span class="chevron">▾</span>Hide</button></h3>' +
-        '<div class="card-collapsible-body" id="slideshows-body">' +
-          '<div id="slideshows-list"></div>' +
-          '<button class="add-objective-btn" id="add-slideshow-btn">+ Add a slideshow or scenario</button>' +
-        '</div>' +
-      '</div>' +
-      '<div class="card" id="hotspots-card">' +
-        '<h3><span>Image Hotspots</span><button class="card-collapse-btn" id="hotspots-collapse-btn"><span class="chevron">▾</span>Hide</button></h3>' +
-        '<div class="card-collapsible-body" id="hotspots-body">' +
-          '<div id="hotspots-list"></div>' +
-          '<button class="add-objective-btn" id="add-hotspot-activity-btn">+ Add an image with hotspots</button>' +
-        '</div>' +
-      '</div>' +
       '<div class="card reflection" id="reflection-card">' +
         '<h3><span>Reflection</span><span class="word-count" id="reflection-wc">0 words</span></h3>' +
         '<div class="rich-editable" id="reflection-area" contenteditable="true" data-placeholder="How does this land for you? What connects to your own experience, questions it raises…"></div>' +
@@ -2435,8 +3154,6 @@
 
     renderReadings(ctx);
     renderQA(ctx.day, "qa-list", "add-qa-btn");
-    renderSlideshows(ctx);
-    renderHotspotActivities(ctx);
 
     var qaCollapseBtn = document.getElementById("qa-collapse-btn");
     var qaBody = document.getElementById("qa-body");
@@ -2444,22 +3161,6 @@
       var collapsed = qaBody.classList.toggle("collapsed");
       qaCollapseBtn.classList.toggle("collapsed", collapsed);
       qaCollapseBtn.lastChild.textContent = collapsed ? "Show" : "Hide";
-    });
-
-    var slideshowsCollapseBtn = document.getElementById("slideshows-collapse-btn");
-    var slideshowsBody = document.getElementById("slideshows-body");
-    slideshowsCollapseBtn.addEventListener("click", function(){
-      var collapsed = slideshowsBody.classList.toggle("collapsed");
-      slideshowsCollapseBtn.classList.toggle("collapsed", collapsed);
-      slideshowsCollapseBtn.lastChild.textContent = collapsed ? "Show" : "Hide";
-    });
-
-    var hotspotsCollapseBtn = document.getElementById("hotspots-collapse-btn");
-    var hotspotsBody = document.getElementById("hotspots-body");
-    hotspotsCollapseBtn.addEventListener("click", function(){
-      var collapsed = hotspotsBody.classList.toggle("collapsed");
-      hotspotsCollapseBtn.classList.toggle("collapsed", collapsed);
-      hotspotsCollapseBtn.lastChild.textContent = collapsed ? "Show" : "Hide";
     });
 
     var readingsCollapseBtn = document.getElementById("readings-collapse-btn");
@@ -2617,18 +3318,39 @@
     var objectives = ctx.day.objectives || [];
     if(!objectives.length) return;
     var hint = document.createElement("div");
-    hint.className = "obj-tag-hint";
-    hint.textContent = "Select text above, then click an objective to highlight it in that colour:";
+    hint.className = "obj-rail-hint";
+    hint.textContent = "Select text, click an objective to tag it. Click with nothing selected to find it in your notes.";
     chipsEl.appendChild(hint);
     objectives.forEach(function(obj, i){
       var chip = document.createElement("button");
       chip.className = "obj-tag-chip";
       chip.style.background = obj.color;
       chip.textContent = obj.text ? obj.text : ("Objective " + (i+1));
-      chip.title = "Tag the selected notes text with this objective";
-      chip.addEventListener("click", function(){ tagSelectionWithObjective(obj); });
+      chip.title = "Tag selected text, or click with nothing selected to find where this appears";
+      chip.addEventListener("click", function(){
+        var notesArea = document.getElementById("notes-area");
+        var sel = window.getSelection();
+        var hasSelection = sel && sel.rangeCount && !sel.isCollapsed && notesArea && notesArea.contains(sel.anchorNode);
+        if(hasSelection) tagSelectionWithObjective(obj);
+        else highlightObjectiveInstances(obj.id);
+      });
       chipsEl.appendChild(chip);
     });
+  }
+
+  function highlightObjectiveInstances(objId){
+    var notesArea = document.getElementById("notes-area");
+    if(!notesArea) return;
+    var matches = notesArea.querySelectorAll('[data-obj-id="' + objId + '"]');
+    if(!matches.length){
+      alert("This objective hasn't been tagged to any notes text yet. Select some text and click it to tag.");
+      return;
+    }
+    matches.forEach(function(m){ m.classList.add("flash-highlight"); });
+    if(matches[0].scrollIntoView) matches[0].scrollIntoView({ behavior:"smooth", block:"center" });
+    setTimeout(function(){
+      matches.forEach(function(m){ m.classList.remove("flash-highlight"); });
+    }, 1600);
   }
 
   function tagSelectionWithObjective(obj){
@@ -2705,6 +3427,7 @@
         '<button data-cmd="bold" title="Bold"><b>B</b></button>' +
         '<button data-cmd="italic" title="Italic"><i>I</i></button>' +
         '<button data-cmd="underline" title="Underline"><u>U</u></button>' +
+        '<button data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>' +
         '<div class="fmt-divider"></div>' +
         '<button data-cmd="formatBlock" data-val="H2" class="wide">Heading</button>' +
         '<button data-cmd="formatBlock" data-val="BLOCKQUOTE" class="wide">Quote</button>' +
@@ -2712,6 +3435,14 @@
         '<div class="fmt-divider"></div>' +
         '<button data-cmd="insertUnorderedList">•</button>' +
         '<button data-cmd="insertOrderedList">1.</button>' +
+        '<button data-cmd="outdent" title="Decrease indent">⇤</button>' +
+        '<button data-cmd="indent" title="Increase indent">⇥</button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button data-cmd="foreColor" data-val="#B5592E" class="text-color-swatch" style="color:#B5592E;" title="Terracotta text">A</button>' +
+        '<button data-cmd="foreColor" data-val="#4F5C44" class="text-color-swatch" style="color:#4F5C44;" title="Sage text">A</button>' +
+        '<button data-cmd="foreColor" data-val="#5B7A99" class="text-color-swatch" style="color:#5B7A99;" title="Blue text">A</button>' +
+        '<button data-cmd="foreColor" data-val="#8C6A9E" class="text-color-swatch" style="color:#8C6A9E;" title="Purple text">A</button>' +
+        '<button data-cmd="foreColor" data-val="#2E2A22" class="text-color-swatch" style="color:#2E2A22;" title="Default text colour">A</button>' +
         '<div class="fmt-divider"></div>' +
         '<button data-cmd="hiliteColor" data-val="#F5D98B" class="highlight-swatch" style="background:#F5D98B;" title="Yellow highlight">▧</button>' +
         '<button data-cmd="hiliteColor" data-val="#C9E4B0" class="highlight-swatch" style="background:#C9E4B0;" title="Green highlight">▧</button>' +
@@ -2719,6 +3450,16 @@
         '<button data-cmd="hiliteColor" data-val="#F0C4DC" class="highlight-swatch" style="background:#F0C4DC;" title="Pink highlight">▧</button>' +
         '<button data-cmd="hiliteColor" data-val="#D9C7F0" class="highlight-swatch" style="background:#D9C7F0;" title="Purple highlight">▧</button>' +
         '<button data-cmd="removeFormat">✕</button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button class="wide" id="insert-link-btn" title="Insert a link">🔗 Link</button>' +
+        '<button class="wide" id="insert-checklist-btn" title="Insert a checklist item">☑ Checklist</button>' +
+        '<button class="wide" id="insert-table-btn" title="Insert a table">⊞ Table</button>' +
+        '<button data-cmd="insertHorizontalRule" class="wide" title="Insert a divider line">— Divider</button>' +
+        '<div class="fmt-divider"></div>' +
+        '<button class="wide" id="outline-btn" title="Jump between headings in this note">☰ Outline</button>' +
+        '<button class="wide" id="focus-mode-btn" title="Distraction-free writing">🎯 Focus</button>' +
+        '<button class="wide" id="read-aloud-btn" title="Read this note aloud">🔊 Read aloud</button>' +
+        '<button class="wide" id="dictate-btn" title="Speak instead of typing">🎤 Dictate</button>' +
         '<div class="fmt-divider"></div>' +
         '<button class="wide" id="insert-image-btn">🖼 Image</button>' +
         '<div class="fmt-divider"></div>' +
@@ -2806,7 +3547,7 @@
         '</div>' +
         '<div class="split-col">' +
           '<div class="card" id="notes-card" style="flex:1; display:flex; flex-direction:column;">' +
-            '<h3><span>Chapter notes</span><span class="word-count" id="notes-wc">0 words</span></h3>' +
+            '<h3><span>Chapter notes</span><span style="display:flex; align-items:center; gap:8px;"><button class="card-collapse-btn" id="link-chapter-btn" title="Link this note to another Library chapter">🔗 Chapter</button><button class="card-collapse-btn" id="find-sources-btn" title="Search for peer-reviewed sources to add">📚 Sources</button><span class="word-count" id="notes-wc">0 words</span></span></h3>' +
             '<div class="rich-editable scrollable" id="notes-area" contenteditable="true" data-placeholder="Start writing…"></div>' +
           '</div>' +
         '</div>' +
@@ -3040,6 +3781,11 @@
       exportBtn2.textContent = "Export reflections (.doc)";
       exportBtn2.addEventListener("click", function(){ exportUnitToDoc(unit); });
       actions.appendChild(exportBtn2);
+
+      var refsBtn = document.createElement("button");
+      refsBtn.textContent = "📑 Reference list";
+      refsBtn.addEventListener("click", function(){ openReferenceListModal(unit); });
+      actions.appendChild(refsBtn);
 
       card.appendChild(actions);
       sheetColEl.appendChild(card);
@@ -3553,7 +4299,10 @@
             var slideshowText = (day.slideshows||[]).map(function(deck){
               return deck.name + " " + (deck.slides||[]).map(function(s){ return s.title + " " + s.body; }).join(" ");
             }).join(" ");
-            var haystack = (day.label + " " + day.topic + " " + readingsText + " " + objectivesText + " " + qaText + " " + slideshowText + " " + stripHtml(day.notes) + " " + stripHtml(day.reflection) + " " + stripHtml(day.sourceText)).toLowerCase();
+            var hotspotText = (day.hotspotActivities||[]).map(function(a){
+              return a.name + " " + (a.hotspots||[]).map(function(h){ return h.label + " " + h.info; }).join(" ");
+            }).join(" ");
+            var haystack = (day.label + " " + day.topic + " " + readingsText + " " + objectivesText + " " + qaText + " " + slideshowText + " " + hotspotText + " " + stripHtml(day.notes) + " " + stripHtml(day.reflection) + " " + stripHtml(day.sourceText)).toLowerCase();
             if(haystack.indexOf(q) !== -1){
               hits.push({label: day.topic || day.label, path: unit.title + " · Week " + week.number + " · " + day.label,
                 go: function(){ state.openUnitId = unit.id; state.activeDayId = day.id; }});
