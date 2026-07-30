@@ -513,6 +513,23 @@
   .specialchar-btn{ font-size:16px; padding:8px 0; border:1px solid var(--border); border-radius:6px; background:#fff; cursor:pointer; }
   .specialchar-btn:hover{ border-color:var(--sage); background:var(--sage-tint); }
 
+  .footnote-ref{ color:var(--terracotta); cursor:pointer; font-weight:600; }
+  .footnotes-list{ margin-top:14px; padding-top:10px; border-top:1px dashed var(--border); }
+  .footnotes-list.empty{ display:none; }
+  .footnote-row{ display:flex; gap:8px; align-items:flex-start; margin-bottom:6px; font-family: system-ui, sans-serif; font-size:12px; }
+  .footnote-row .fn-num{ color:var(--terracotta); font-weight:700; flex-shrink:0; padding-top:6px; }
+  .footnote-row input{ flex:1; padding:6px 8px; border:1px solid var(--border); border-radius:5px; font-family: system-ui, sans-serif; font-size:12px; }
+  .footnote-row .remove-reading{ background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:13px; }
+
+  .comment-highlight{ background:#FBF0D9; border-bottom:2px dotted var(--ochre); cursor:pointer; }
+  #comment-popover{
+    position:fixed; z-index:70; background:#fff; border:1px solid var(--border); border-radius:8px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.22); padding:12px; width:240px; font-family: system-ui, sans-serif;
+  }
+  #comment-popover textarea{ width:100%; padding:6px 8px; border:1px solid var(--border); border-radius:5px; font-size:12px; font-family: system-ui, sans-serif; resize:vertical; margin-bottom:8px; }
+  #comment-popover .comment-popover-actions{ display:flex; gap:6px; justify-content:space-between; }
+  #comment-popover button{ font-size:11px; padding:5px 9px; border-radius:5px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+
   .rich-editable{
     font-family: var(--note-font-family); font-size: var(--note-font-size); line-height:1.7; color:var(--ink); outline:none; min-height:120px;
   }
@@ -973,6 +990,25 @@
   </div>
 </div>
 
+<div class="modal-backdrop" id="findreplace-modal-backdrop">
+  <div class="modal" style="width:min(420px, 92vw);">
+    <h3>Find &amp; Replace</h3>
+    <label>Find</label>
+    <input type="text" id="find-input" placeholder="Text to find" style="width:100%; padding:7px 9px; border-radius:5px; border:1px solid var(--border); font-family: system-ui, sans-serif; font-size:13px;">
+    <label>Replace with</label>
+    <input type="text" id="replace-input" placeholder="Replacement text (optional)" style="width:100%; padding:7px 9px; border-radius:5px; border:1px solid var(--border); font-family: system-ui, sans-serif; font-size:13px;">
+    <div id="find-status" style="font-family: system-ui, sans-serif; font-size:11px; color:var(--ink-soft); margin-top:8px;"></div>
+    <div class="modal-actions" style="flex-wrap:wrap;">
+      <button id="find-next-btn">Find next</button>
+      <button id="replace-one-btn">Replace</button>
+      <button id="replace-all-btn" class="primary">Replace all</button>
+      <button id="findreplace-close-btn">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="comment-popover" style="display:none;"></div>
+
 <div class="modal-backdrop" id="track-changes-modal-backdrop">
   <div class="modal" style="width:min(560px, 92vw); max-height:85vh; overflow-y:auto;">
     <h3>Review changes</h3>
@@ -1312,6 +1348,8 @@
           day.hotspotActivities.forEach(function(activity){
             activity.hotspots = Array.isArray(activity.hotspots) ? activity.hotspots : [];
           });
+          day.footnotes = Array.isArray(day.footnotes) ? day.footnotes : [];
+          day.comments = Array.isArray(day.comments) ? day.comments : [];
           day.notes = day.notes || "";
           day.reflection = day.reflection || "";
           day.sourceText = day.sourceText || "";
@@ -1323,6 +1361,8 @@
       b.chapters.forEach(function(c){
         c.tags = Array.isArray(c.tags) ? c.tags : [];
         c.qa = Array.isArray(c.qa) ? c.qa : [];
+        c.footnotes = Array.isArray(c.footnotes) ? c.footnotes : [];
+        c.comments = Array.isArray(c.comments) ? c.comments : [];
         c.notes = c.notes || "";
         c.sourceText = c.sourceText || "";
       });
@@ -3147,7 +3187,7 @@
         "anthropic-dangerous-direct-browser-access": "true"
       },
       body: JSON.stringify({
-        model: "claude-sonnet-5",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 1024,
         system: "You are Keke, a warm, encouraging AI writing assistant helping a Master of Counselling student with their study notes. Be concise, practical, and supportive. Keep responses focused and directly usable, since they may be inserted straight into the student's notes.",
         messages: [{ role: "user", content: userContent }]
@@ -3360,6 +3400,294 @@
     if(e.target && e.target.id === "specialchars-btn"){
       renderSpecialCharsGrid();
       document.getElementById("specialchars-modal-backdrop").classList.add("show");
+    }
+  });
+
+  // ================= LINE & PARAGRAPH SPACING =================
+  function findContainingBlock(){
+    if(!activeEditable) return null;
+    var sel = window.getSelection();
+    if(!sel || !sel.rangeCount) return null;
+    var node = sel.getRangeAt(0).commonAncestorContainer;
+    var block = node.nodeType === 3 ? node.parentElement : node;
+    while(block && block !== activeEditable && !/^(P|H2|LI|BLOCKQUOTE|DIV)$/.test(block.tagName)){
+      block = block.parentElement;
+    }
+    return (block && block !== activeEditable) ? block : null;
+  }
+  function applyLineSpacing(value){
+    var block = findContainingBlock();
+    if(!block){ alert("Click into a paragraph first, then choose a spacing option."); return; }
+    block.style.lineHeight = value;
+    activeEditable.dispatchEvent(new Event("input"));
+  }
+  function applyParagraphSpacing(marginValue){
+    var block = findContainingBlock();
+    if(!block){ alert("Click into a paragraph first, then choose a spacing option."); return; }
+    block.style.marginTop = marginValue;
+    block.style.marginBottom = marginValue;
+    activeEditable.dispatchEvent(new Event("input"));
+  }
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "line-spacing-single") applyLineSpacing("1.4");
+    if(e.target && e.target.id === "line-spacing-1-5") applyLineSpacing("1.75");
+    if(e.target && e.target.id === "line-spacing-double") applyLineSpacing("2.3");
+    if(e.target && e.target.id === "para-spacing-compact") applyParagraphSpacing("2px");
+    if(e.target && e.target.id === "para-spacing-normal") applyParagraphSpacing("10px");
+    if(e.target && e.target.id === "para-spacing-relaxed") applyParagraphSpacing("22px");
+  });
+
+  // ================= FIND & REPLACE =================
+  var findMatches = [];
+  var findMatchIndex = -1;
+  var lastFindTerm = null;
+  function findAllMatches(term){
+    findMatches = [];
+    if(!activeEditable || !term) return;
+    var walker = document.createTreeWalker(activeEditable, NodeFilter.SHOW_TEXT);
+    var node;
+    var termLower = term.toLowerCase();
+    while(node = walker.nextNode()){
+      var lower = node.textContent.toLowerCase();
+      var idx = 0;
+      while((idx = lower.indexOf(termLower, idx)) !== -1){
+        findMatches.push({ node: node, start: idx, end: idx + term.length });
+        idx += term.length;
+      }
+    }
+  }
+  function highlightMatch(index){
+    if(!findMatches.length) return;
+    var m = findMatches[index];
+    if(!m.node.parentNode){ return; } // node may be stale after a prior replace
+    var range = document.createRange();
+    range.setStart(m.node, m.start);
+    range.setEnd(m.node, m.end);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    if(m.node.parentElement && m.node.parentElement.scrollIntoView){
+      m.node.parentElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
+  function findNext(){
+    if(!activeEditable){ alert("Click into a notes area first."); return; }
+    var term = document.getElementById("find-input").value;
+    if(!term) return;
+    if(term !== lastFindTerm){
+      findAllMatches(term);
+      findMatchIndex = -1;
+      lastFindTerm = term;
+    }
+    if(!findMatches.length){ document.getElementById("find-status").textContent = "No matches found."; return; }
+    findMatchIndex = (findMatchIndex + 1) % findMatches.length;
+    highlightMatch(findMatchIndex);
+    document.getElementById("find-status").textContent = "Match " + (findMatchIndex + 1) + " of " + findMatches.length;
+  }
+  function replaceCurrentMatch(){
+    if(findMatchIndex < 0 || !findMatches.length){ findNext(); return; }
+    var replaceTerm = document.getElementById("replace-input").value;
+    activeEditable.focus();
+    document.execCommand("insertText", false, replaceTerm);
+    activeEditable.dispatchEvent(new Event("input"));
+    findAllMatches(document.getElementById("find-input").value);
+    findMatchIndex = -1;
+    document.getElementById("find-status").textContent = findMatches.length ? (findMatches.length + " match" + (findMatches.length === 1 ? "" : "es") + " left") : "No more matches.";
+  }
+  function replaceAllMatches(){
+    if(!activeEditable){ alert("Click into a notes area first."); return; }
+    var term = document.getElementById("find-input").value;
+    var replaceTerm = document.getElementById("replace-input").value;
+    if(!term) return;
+    var escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    var regex = new RegExp(escaped, "gi");
+    var walker = document.createTreeWalker(activeEditable, NodeFilter.SHOW_TEXT);
+    var node;
+    var count = 0;
+    var textNodes = [];
+    while(node = walker.nextNode()) textNodes.push(node);
+    textNodes.forEach(function(n){
+      var matches = n.textContent.match(regex);
+      if(matches){
+        count += matches.length;
+        n.textContent = n.textContent.replace(regex, replaceTerm);
+      }
+    });
+    activeEditable.dispatchEvent(new Event("input"));
+    document.getElementById("find-status").textContent = count ? ("Replaced " + count + " occurrence" + (count === 1 ? "" : "s") + ".") : "No matches found.";
+    findMatches = [];
+    findMatchIndex = -1;
+    lastFindTerm = null;
+  }
+  document.getElementById("find-next-btn").addEventListener("click", findNext);
+  document.getElementById("replace-one-btn").addEventListener("click", replaceCurrentMatch);
+  document.getElementById("replace-all-btn").addEventListener("click", replaceAllMatches);
+  document.getElementById("find-input").addEventListener("keydown", function(e){
+    if(e.key === "Enter"){ e.preventDefault(); findNext(); }
+  });
+  document.getElementById("findreplace-close-btn").addEventListener("click", function(){
+    document.getElementById("findreplace-modal-backdrop").classList.remove("show");
+  });
+  document.getElementById("findreplace-modal-backdrop").addEventListener("click", function(e){
+    if(e.target === this) this.classList.remove("show");
+  });
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "find-replace-btn"){
+      findMatches = []; findMatchIndex = -1; lastFindTerm = null;
+      document.getElementById("find-status").textContent = "";
+      document.getElementById("findreplace-modal-backdrop").classList.add("show");
+      setTimeout(function(){ document.getElementById("find-input").focus(); }, 30);
+    }
+  });
+
+  // ================= FOOTNOTES =================
+  function getFootnotesEntity(){
+    if(state.mode === "planner"){ var ctx = activeDayCtx(); return ctx ? ctx.day : null; }
+    if(state.mode === "library"){ var lctx = activeChapterCtx(); return lctx ? lctx.chapter : null; }
+    return null;
+  }
+  function renderFootnotes(){
+    var container = document.getElementById("footnotes-area");
+    if(!container) return;
+    var entity = getFootnotesEntity();
+    if(!entity){ container.innerHTML = ""; return; }
+    entity.footnotes = entity.footnotes || [];
+    if(!entity.footnotes.length){ container.innerHTML = ""; return; }
+    var wrap = document.createElement("div");
+    wrap.className = "footnotes-list";
+    entity.footnotes.forEach(function(fn, idx){
+      var row = document.createElement("div");
+      row.className = "footnote-row";
+      row.id = "footnote-row-" + fn.id;
+      var num = document.createElement("span");
+      num.className = "fn-num";
+      num.textContent = (idx + 1) + ".";
+      var input = document.createElement("input");
+      input.type = "text";
+      input.placeholder = "Footnote text…";
+      input.value = fn.text || "";
+      input.addEventListener("input", function(){
+        fn.text = input.value;
+        scheduleSave(function(){ entity.updated = Date.now(); });
+      });
+      var removeBtn = document.createElement("button");
+      removeBtn.className = "remove-reading";
+      removeBtn.title = "Remove footnote";
+      removeBtn.textContent = "✕";
+      removeBtn.addEventListener("click", function(){
+        entity.footnotes = entity.footnotes.filter(function(f){ return f.id !== fn.id; });
+        persist();
+        renderFootnotes();
+      });
+      row.appendChild(num);
+      row.appendChild(input);
+      row.appendChild(removeBtn);
+      wrap.appendChild(row);
+    });
+    container.innerHTML = "";
+    container.appendChild(wrap);
+  }
+  function insertFootnote(){
+    if(!activeEditable){ alert("Click into the notes area first, then try again."); return; }
+    var entity = getFootnotesEntity();
+    if(!entity) return;
+    entity.footnotes = entity.footnotes || [];
+    var fn = { id: uid(), text: "" };
+    entity.footnotes.push(fn);
+    var num = entity.footnotes.length;
+    activeEditable.focus();
+    document.execCommand("insertHTML", false, '<sup class="footnote-ref" contenteditable="false" data-fn-id="' + fn.id + '">[' + num + ']</sup>');
+    activeEditable.dispatchEvent(new Event("input"));
+    persist();
+    renderFootnotes();
+    setTimeout(function(){
+      var row = document.getElementById("footnote-row-" + fn.id);
+      if(row){ var inp = row.querySelector("input"); if(inp) inp.focus(); }
+    }, 30);
+  }
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "insert-footnote-btn") insertFootnote();
+    var fnRef = e.target && e.target.closest ? e.target.closest(".footnote-ref") : null;
+    if(fnRef){
+      var row = document.getElementById("footnote-row-" + fnRef.getAttribute("data-fn-id"));
+      if(row){
+        row.scrollIntoView({ behavior: "smooth", block: "center" });
+        row.classList.add("flash-highlight");
+        setTimeout(function(){ row.classList.remove("flash-highlight"); }, 1400);
+      }
+    }
+  });
+
+  // ================= INLINE COMMENTS =================
+  function insertComment(){
+    if(!activeEditable){ alert("Click into a notes area first."); return; }
+    var sel = window.getSelection();
+    if(!sel || sel.isCollapsed || !activeEditable.contains(sel.anchorNode)){
+      alert("Select the text you want to comment on first.");
+      return;
+    }
+    var entity = getFootnotesEntity();
+    if(!entity) return;
+    entity.comments = entity.comments || [];
+    var range = sel.getRangeAt(0);
+    var span = document.createElement("span");
+    span.className = "comment-highlight";
+    span.setAttribute("data-comment-id", uid());
+    var commentId = span.getAttribute("data-comment-id");
+    try{
+      range.surroundContents(span);
+    }catch(e){
+      var frag = range.extractContents();
+      span.appendChild(frag);
+      range.insertNode(span);
+    }
+    entity.comments.push({ id: commentId, text: "" });
+    sel.removeAllRanges();
+    activeEditable.dispatchEvent(new Event("input"));
+    persist();
+    openCommentPopover(span, entity);
+  }
+  function openCommentPopover(span, entity){
+    var commentId = span.getAttribute("data-comment-id");
+    var comment = (entity.comments || []).find(function(c){ return c.id === commentId; });
+    if(!comment) return;
+    var popover = document.getElementById("comment-popover");
+    popover.innerHTML =
+      '<textarea rows="3" placeholder="Add your note…"></textarea>' +
+      '<div class="comment-popover-actions">' +
+        '<button class="comment-remove-btn">Remove</button>' +
+        '<button class="comment-save-btn">Save</button>' +
+      '</div>';
+    var textarea = popover.querySelector("textarea");
+    textarea.value = comment.text || "";
+    popover.querySelector(".comment-save-btn").addEventListener("click", function(){
+      comment.text = textarea.value;
+      persist();
+      popover.style.display = "none";
+    });
+    popover.querySelector(".comment-remove-btn").addEventListener("click", function(){
+      entity.comments = entity.comments.filter(function(c){ return c.id !== commentId; });
+      span.outerHTML = span.innerHTML;
+      if(activeEditable) activeEditable.dispatchEvent(new Event("input"));
+      persist();
+      popover.style.display = "none";
+    });
+    var rect = span.getBoundingClientRect();
+    popover.style.left = Math.min(rect.left, window.innerWidth - 260) + "px";
+    popover.style.top = (rect.bottom + 6) + "px";
+    popover.style.display = "block";
+  }
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "insert-comment-btn"){ insertComment(); return; }
+    var commentSpan = e.target && e.target.closest ? e.target.closest(".comment-highlight") : null;
+    if(commentSpan){
+      var entity = getFootnotesEntity();
+      if(entity) openCommentPopover(commentSpan, entity);
+      return;
+    }
+    var popoverEl = document.getElementById("comment-popover");
+    if(popoverEl && popoverEl.style.display === "block" && !popoverEl.contains(e.target)){
+      popoverEl.style.display = "none";
     }
   });
 
@@ -3810,6 +4138,7 @@
       '<div class="fmt-toolbar">' +
         '<button data-cmd="undo" title="Undo">↺</button>' +
         '<button data-cmd="redo" title="Redo">↻</button>' +
+        '<button id="find-replace-btn" title="Find and replace">🔍</button>' +
         '<div class="fmt-divider"></div>' +
         '<button data-cmd="bold" title="Bold"><b>B</b></button>' +
         '<button data-cmd="italic" title="Italic"><i>I</i></button>' +
@@ -3859,6 +4188,19 @@
             '<button data-cmd="justifyLeft">⬅ Left</button>' +
             '<button data-cmd="justifyCenter">↔ Center</button>' +
             '<button data-cmd="justifyRight">➡ Right</button>' +
+            '<button data-cmd="justifyFull">≡ Justify</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="toolbar-dropdown">' +
+          '<button class="toolbar-dropdown-trigger" title="Line and paragraph spacing">↕</button>' +
+          '<div class="toolbar-dropdown-panel tools-panel">' +
+            '<button id="line-spacing-single">Single line spacing</button>' +
+            '<button id="line-spacing-1-5">1.5 line spacing</button>' +
+            '<button id="line-spacing-double">Double line spacing</button>' +
+            '<div class="fmt-divider" style="width:auto; height:1px; margin:4px 0;"></div>' +
+            '<button id="para-spacing-compact">Compact paragraph spacing</button>' +
+            '<button id="para-spacing-normal">Normal paragraph spacing</button>' +
+            '<button id="para-spacing-relaxed">Relaxed paragraph spacing</button>' +
           '</div>' +
         '</div>' +
         '<button data-cmd="removeFormat" title="Clear formatting">✕</button>' +
@@ -3882,6 +4224,8 @@
             '<button id="dictate-btn">🎤 Dictate</button>' +
             '<button id="track-changes-btn" title="Track changes">📝 Track changes</button>' +
             '<button id="specialchars-btn">Ω Special characters</button>' +
+            '<button id="insert-footnote-btn">¹ Insert footnote</button>' +
+            '<button id="insert-comment-btn">💬 Add comment</button>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -3929,6 +4273,7 @@
     document.getElementById("print-day-btn").addEventListener("click", function(){ printDayCtx(ctx); });
     trackChangesSnapshots = {};
     renderStylesDropdown();
+    renderFootnotes();
 
     document.getElementById("duplicate-day-btn").addEventListener("click", function(){
       var idx = ctx.week.days.indexOf(ctx.day);
@@ -3999,6 +4344,7 @@
             '<div class="notes-body-row">' +
               '<div class="objective-rail" id="objective-tag-chips"></div>' +
               '<div class="rich-editable scrollable" id="notes-area" contenteditable="true" spellcheck="true" data-placeholder="What did the reading cover? Key concepts, models, terms…" style="flex:1;"></div>' +
+              '<div id="footnotes-area"></div>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -4289,6 +4635,7 @@
       '<div class="fmt-toolbar">' +
         '<button data-cmd="undo" title="Undo">↺</button>' +
         '<button data-cmd="redo" title="Redo">↻</button>' +
+        '<button id="find-replace-btn" title="Find and replace">🔍</button>' +
         '<div class="fmt-divider"></div>' +
         '<button data-cmd="bold" title="Bold"><b>B</b></button>' +
         '<button data-cmd="italic" title="Italic"><i>I</i></button>' +
@@ -4338,6 +4685,19 @@
             '<button data-cmd="justifyLeft">⬅ Left</button>' +
             '<button data-cmd="justifyCenter">↔ Center</button>' +
             '<button data-cmd="justifyRight">➡ Right</button>' +
+            '<button data-cmd="justifyFull">≡ Justify</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="toolbar-dropdown">' +
+          '<button class="toolbar-dropdown-trigger" title="Line and paragraph spacing">↕</button>' +
+          '<div class="toolbar-dropdown-panel tools-panel">' +
+            '<button id="line-spacing-single">Single line spacing</button>' +
+            '<button id="line-spacing-1-5">1.5 line spacing</button>' +
+            '<button id="line-spacing-double">Double line spacing</button>' +
+            '<div class="fmt-divider" style="width:auto; height:1px; margin:4px 0;"></div>' +
+            '<button id="para-spacing-compact">Compact paragraph spacing</button>' +
+            '<button id="para-spacing-normal">Normal paragraph spacing</button>' +
+            '<button id="para-spacing-relaxed">Relaxed paragraph spacing</button>' +
           '</div>' +
         '</div>' +
         '<button data-cmd="removeFormat" title="Clear formatting">✕</button>' +
@@ -4359,6 +4719,8 @@
             '<button id="dictate-btn">🎤 Dictate</button>' +
             '<button id="track-changes-btn" title="Track changes">📝 Track changes</button>' +
             '<button id="specialchars-btn">Ω Special characters</button>' +
+            '<button id="insert-footnote-btn">¹ Insert footnote</button>' +
+            '<button id="insert-comment-btn">💬 Add comment</button>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -4429,6 +4791,7 @@
     document.getElementById("print-chapter-btn").addEventListener("click", function(){ printChapterCtx(ctx); });
     trackChangesSnapshots = {};
     renderStylesDropdown();
+    renderFootnotes();
 
     document.querySelectorAll(".fmt-toolbar button[data-cmd]").forEach(function(btn){
       btn.addEventListener("click", function(){
@@ -4450,6 +4813,7 @@
           '<div class="card" id="notes-card" style="flex:1; display:flex; flex-direction:column;">' +
             '<h3><span>Chapter notes</span><span class="word-count" id="notes-wc">0 words</span></h3>' +
             '<div class="rich-editable scrollable" id="notes-area" contenteditable="true" spellcheck="true" data-placeholder="Start writing…"></div>' +
+            '<div id="footnotes-area"></div>' +
           '</div>' +
         '</div>' +
       '</div>' +
