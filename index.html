@@ -249,7 +249,7 @@
   .fmt-divider{ width:1px; background:var(--border); margin:2px 4px; }
 
   .page-scroll{ flex:1; overflow-y:auto; padding:26px 0 60px; display:flex; justify-content:center; }
-  .sheet-col{ width:min(980px, 94%); display:flex; flex-direction:column; gap:18px; }
+  .sheet-col{ width:min(1100px, 92%); display:flex; flex-direction:column; gap:18px; }
 
   .split-row{ display:flex; gap:18px; align-items:stretch; }
   .split-col{ flex:1; min-width:0; display:flex; flex-direction:column; }
@@ -263,6 +263,16 @@
     font-family: system-ui, sans-serif; font-size:11px; text-transform:uppercase; letter-spacing:.8px;
     color:var(--sage-dark); margin:0 0 12px; display:flex; align-items:center; justify-content:space-between;
   }
+  .card-collapse-btn{
+    background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:11px;
+    display:flex; align-items:center; gap:4px; text-transform:none; letter-spacing:0; font-weight:600;
+  }
+  .card-collapse-btn:hover{ color:var(--sage-dark); }
+  .card-collapse-btn .chevron{ transition:transform .15s ease; display:inline-block; }
+  .card-collapse-btn.collapsed .chevron{ transform:rotate(-90deg); }
+  .card-collapsible-body{ overflow:hidden; }
+  .card-collapsible-body.collapsed{ display:none; }
+  .split-col.collapsed{ display:none; }
 
   /* readings list */
   .reading-row{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
@@ -408,6 +418,19 @@
   }
 
   /* ---------- RESPONSIVE ---------- */
+
+  /* Big monitors: let the working area actually use the extra width instead of sitting
+     in a narrow column with large empty margins either side. */
+  @media (min-width: 1440px){
+    .sheet-col{ width:min(1500px, 90%); }
+  }
+  @media (min-width: 1920px){
+    .sheet-col{ width:min(1850px, 88%); }
+  }
+  @media (min-width: 2560px){
+    .sheet-col{ width:min(2200px, 82%); }
+  }
+
   .mobile-topbar{
     display:none;
     align-items:center;
@@ -644,6 +667,9 @@
 <div class="undo-toast" id="undo-toast">
   <span id="undo-toast-text">Deleted.</span>
   <button id="undo-toast-btn">Undo</button>
+</div>
+<div class="undo-toast" id="save-confirm-toast" style="gap:8px;">
+  <span id="save-confirm-toast-text">✓ Saved</span>
 </div>
 
 <!-- Unit modal -->
@@ -897,13 +923,16 @@
     if(firebaseEnabled && fbRef){
       var json = JSON.stringify(data);
       lastWrittenJSON = json;
-      fbRef.set(data).then(function(){
+      return fbRef.set(data).then(function(){
         setSyncStatus(syncedLabel());
+        return "synced";
       }).catch(function(err){
         console.error("Firebase write failed", err);
         setSyncStatus("Sync failed — saved locally only");
+        return Promise.reject(err);
       });
     }
+    return Promise.resolve("local");
   }
 
   // ---------- DOM refs ----------
@@ -937,6 +966,8 @@
   var undoToastEl = document.getElementById("undo-toast");
   var undoToastText = document.getElementById("undo-toast-text");
   var undoToastBtn = document.getElementById("undo-toast-btn");
+  var saveConfirmToast = document.getElementById("save-confirm-toast");
+  var saveConfirmToastText = document.getElementById("save-confirm-toast-text");
   var imageFileInput = document.getElementById("image-file-input");
 
   var toolbarEl = document.getElementById("toolbar");
@@ -1211,6 +1242,35 @@
     clearTimeout(undoTimer);
     undoToastEl.classList.remove("show");
     if(undoAction){ undoAction(); undoAction = null; }
+  });
+
+  // ================= MANUAL SAVE =================
+  var saveConfirmTimer = null;
+  function showSaveConfirmToast(message, sticky){
+    clearTimeout(saveConfirmTimer);
+    saveConfirmToastText.textContent = message;
+    saveConfirmToast.classList.add("show");
+    if(!sticky){
+      saveConfirmTimer = setTimeout(function(){ saveConfirmToast.classList.remove("show"); }, 2800);
+    }
+  }
+  function manualSaveAndConfirm(){
+    showSaveConfirmToast("💾 Saving…", true);
+    setSaveStatus("Saved");
+    persist().then(function(result){
+      if(result === "synced"){
+        showSaveConfirmToast("✓ Saved and synced to Firebase");
+      } else {
+        showSaveConfirmToast(firebaseEnabled ? "✓ Saved locally (Firebase not connected right now)" : "✓ Saved locally");
+      }
+    }).catch(function(){
+      showSaveConfirmToast("⚠ Saved locally — Firebase sync failed");
+    });
+  }
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.closest && e.target.closest("#manual-save-btn")){
+      manualSaveAndConfirm();
+    }
   });
 
   function renderQA(entity, listId, addBtnId){
@@ -1668,6 +1728,7 @@
         '<input type="text" class="main-title-input" id="topic-input" placeholder="Topic for this day">' +
         '<button class="flag-toggle" id="flag-toggle">🚩 Revisit before exam</button>' +
         '<button class="done-toggle" id="done-toggle">Mark day complete</button>' +
+        '<button class="done-toggle" id="manual-save-btn" title="Save and sync now">💾 Save now</button>' +
         '<span class="save-status" id="save-status">Saved</span>' +
       '</div>' +
       '<div class="meta-row"><input type="text" class="tags-input" id="assessment-input" placeholder="Linked assessment, e.g. COU6503.3"></div>' +
@@ -1776,14 +1837,16 @@
         '<button class="add-objective-btn" id="add-objective-btn">+ Add objective</button>' +
       '</div>' +
       '<div class="card" id="readings-card">' +
-        '<h3>Readings</h3>' +
-        '<div id="readings-list"></div>' +
-        '<button class="add-reading-btn" id="add-reading-btn">+ Add reading</button>' +
+        '<h3><span>Readings</span><button class="card-collapse-btn" id="readings-collapse-btn"><span class="chevron">▾</span>Hide</button></h3>' +
+        '<div class="card-collapsible-body" id="readings-body">' +
+          '<div id="readings-list"></div>' +
+          '<button class="add-reading-btn" id="add-reading-btn">+ Add reading</button>' +
+        '</div>' +
       '</div>' +
       '<div class="split-row">' +
-        '<div class="split-col">' +
+        '<div class="split-col" id="source-split-col">' +
           '<div class="card source" style="flex:1; display:flex; flex-direction:column;">' +
-            '<h3><span>Source pages</span><input type="text" class="page-range-input" id="source-range-input" placeholder="pp. 6\u201310"></h3>' +
+            '<h3><span>Source pages</span><input type="text" class="page-range-input" id="source-range-input" placeholder="pp. 6\u201310"><button class="card-collapse-btn" id="source-collapse-btn"><span class="chevron">▾</span>Hide</button></h3>' +
             '<div class="rich-editable scrollable" id="source-area" contenteditable="true" data-placeholder="Paste the textbook pages you\u2019re working from here…"></div>' +
           '</div>' +
         '</div>' +
@@ -1796,9 +1859,11 @@
         '</div>' +
       '</div>' +
       '<div class="card" id="qa-card">' +
-        '<h3><span>Questions &amp; Answers</span></h3>' +
-        '<div id="qa-list"></div>' +
-        '<button class="add-qa-btn" id="add-qa-btn">+ Add a question</button>' +
+        '<h3><span>Questions &amp; Answers</span><button class="card-collapse-btn" id="qa-collapse-btn"><span class="chevron">▾</span>Hide</button></h3>' +
+        '<div class="card-collapsible-body" id="qa-body">' +
+          '<div id="qa-list"></div>' +
+          '<button class="add-qa-btn" id="add-qa-btn">+ Add a question</button>' +
+        '</div>' +
       '</div>' +
       '<div class="card reflection" id="reflection-card">' +
         '<h3><span>Reflection</span><span class="word-count" id="reflection-wc">0 words</span></h3>' +
@@ -1807,6 +1872,31 @@
 
     renderReadings(ctx);
     renderQA(ctx.day, "qa-list", "add-qa-btn");
+
+    var qaCollapseBtn = document.getElementById("qa-collapse-btn");
+    var qaBody = document.getElementById("qa-body");
+    qaCollapseBtn.addEventListener("click", function(){
+      var collapsed = qaBody.classList.toggle("collapsed");
+      qaCollapseBtn.classList.toggle("collapsed", collapsed);
+      qaCollapseBtn.lastChild.textContent = collapsed ? "Show" : "Hide";
+    });
+
+    var readingsCollapseBtn = document.getElementById("readings-collapse-btn");
+    var readingsBody = document.getElementById("readings-body");
+    readingsCollapseBtn.addEventListener("click", function(){
+      var collapsed = readingsBody.classList.toggle("collapsed");
+      readingsCollapseBtn.classList.toggle("collapsed", collapsed);
+      readingsCollapseBtn.lastChild.textContent = collapsed ? "Show" : "Hide";
+    });
+
+    var sourceCollapseBtn = document.getElementById("source-collapse-btn");
+    var sourceSplitCol = document.getElementById("source-split-col");
+    sourceCollapseBtn.addEventListener("click", function(e){
+      e.stopPropagation();
+      var collapsed = sourceSplitCol.classList.toggle("collapsed");
+      sourceCollapseBtn.classList.toggle("collapsed", collapsed);
+      sourceCollapseBtn.lastChild.textContent = collapsed ? "Show" : "Hide";
+    });
     renderObjectives(ctx);
 
     var sourceArea = document.getElementById("source-area");
@@ -2026,6 +2116,7 @@
         '<input type="text" class="main-title-input" id="chapter-title-input" placeholder="Chapter title">' +
         '<button class="flag-toggle" id="flag-toggle">🚩 Revisit before exam</button>' +
         '<button class="done-toggle" id="copy-citation-btn" style="border-radius:6px;">Copy in-text citation</button>' +
+        '<button class="done-toggle" id="manual-save-btn" title="Save and sync now">💾 Save now</button>' +
         '<span class="save-status" id="save-status">Saved</span>' +
       '</div>' +
       '<div class="meta-row"><input type="text" class="tags-input" id="tags-input" placeholder="tags, e.g. person-centred, Rogers"><input type="text" class="tags-input" id="assessment-input" style="max-width:180px;" placeholder="Linked assessment, e.g. COU6503.3"></div>' +
@@ -2126,9 +2217,9 @@
 
     sheetColEl.innerHTML =
       '<div class="split-row">' +
-        '<div class="split-col">' +
+        '<div class="split-col" id="source-split-col">' +
           '<div class="card source" style="flex:1; display:flex; flex-direction:column;">' +
-            '<h3><span>Source pages</span><input type="text" class="page-range-input" id="source-range-input" placeholder="pp. 1\u201320"></h3>' +
+            '<h3><span>Source pages</span><input type="text" class="page-range-input" id="source-range-input" placeholder="pp. 1\u201320"><button class="card-collapse-btn" id="source-collapse-btn"><span class="chevron">▾</span>Hide</button></h3>' +
             '<div class="rich-editable scrollable" id="source-area" contenteditable="true" data-placeholder="Paste the chapter pages here…"></div>' +
           '</div>' +
         '</div>' +
@@ -2140,9 +2231,11 @@
         '</div>' +
       '</div>' +
       '<div class="card" id="qa-card">' +
-        '<h3><span>Questions &amp; Answers</span></h3>' +
-        '<div id="qa-list-chapter"></div>' +
-        '<button class="add-qa-btn" id="add-qa-btn-chapter">+ Add a question</button>' +
+        '<h3><span>Questions &amp; Answers</span><button class="card-collapse-btn" id="qa-collapse-btn"><span class="chevron">▾</span>Hide</button></h3>' +
+        '<div class="card-collapsible-body" id="qa-body">' +
+          '<div id="qa-list-chapter"></div>' +
+          '<button class="add-qa-btn" id="add-qa-btn-chapter">+ Add a question</button>' +
+        '</div>' +
       '</div>';
 
     var sourceArea = document.getElementById("source-area");
@@ -2170,6 +2263,23 @@
     });
     activeEditable = notesArea;
     renderQA(ctx.chapter, "qa-list-chapter", "add-qa-btn-chapter");
+
+    var qaCollapseBtn2 = document.getElementById("qa-collapse-btn");
+    var qaBody2 = document.getElementById("qa-body");
+    qaCollapseBtn2.addEventListener("click", function(){
+      var collapsed = qaBody2.classList.toggle("collapsed");
+      qaCollapseBtn2.classList.toggle("collapsed", collapsed);
+      qaCollapseBtn2.lastChild.textContent = collapsed ? "Show" : "Hide";
+    });
+
+    var sourceCollapseBtn = document.getElementById("source-collapse-btn");
+    var sourceSplitCol = document.getElementById("source-split-col");
+    sourceCollapseBtn.addEventListener("click", function(e){
+      e.stopPropagation();
+      var collapsed = sourceSplitCol.classList.toggle("collapsed");
+      sourceCollapseBtn.classList.toggle("collapsed", collapsed);
+      sourceCollapseBtn.lastChild.textContent = collapsed ? "Show" : "Hide";
+    });
   }
 
   // ================= HIGHLIGHTS ROLLUP =================
