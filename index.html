@@ -176,6 +176,92 @@
   }
   .add-qa-btn:hover{ text-decoration:underline; }
 
+  /* ---------- SLIDESHOW / SCENARIO ---------- */
+  .slideshow-deck{ border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:14px; background:#fff; }
+  .slideshow-deck-header{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .slideshow-deck-name{
+    flex:1; border:none; background:none; font-family: system-ui, sans-serif; font-size:13px; font-weight:600;
+    color:var(--ink); outline:none; padding:4px 2px; border-bottom:1px dashed transparent;
+  }
+  .slideshow-deck-name:focus{ border-bottom-color:var(--border); }
+  .slideshow-deck-name::placeholder{ color:#c7bda4; font-weight:400; }
+  .slideshow-counter{ font-family: system-ui, sans-serif; font-size:11px; color:var(--ink-soft); text-align:center; margin-bottom:8px; }
+  .slideshow-viewer{ outline:none; border-radius:6px; }
+  .slideshow-viewer:focus{ box-shadow:0 0 0 2px var(--sage); }
+  .slideshow-slide{ min-height:90px; padding:14px 16px; background:var(--sage-tint); border-radius:6px; margin-bottom:10px; }
+  .slideshow-slide h4{ margin:0 0 8px; font-family: Georgia, serif; font-size:15px; color:var(--sage-dark); }
+  .slideshow-slide-body{ font-size:13.5px; line-height:1.6; color:var(--ink); white-space:pre-wrap; }
+  .slideshow-nav{ display:flex; justify-content:center; align-items:center; gap:16px; }
+  .slideshow-nav button{
+    background:var(--paper); border:1px solid var(--border); border-radius:50%; width:32px; height:32px;
+    cursor:pointer; font-size:15px; color:var(--ink); line-height:1;
+  }
+  .slideshow-nav button:disabled{ opacity:0.3; cursor:default; }
+  .slideshow-nav button:hover:not(:disabled){ border-color:var(--sage); }
+  .slideshow-nav-count{ font-family: system-ui, sans-serif; font-size:11.5px; color:var(--ink-soft); min-width:50px; text-align:center; }
+  .slideshow-empty{ font-family: system-ui, sans-serif; font-size:12px; color:var(--ink-soft); padding:8px 0; }
+  .slideshow-edit-row{ display:flex; gap:8px; margin-bottom:10px; align-items:flex-start; }
+  .slideshow-edit-row .slide-fields{ flex:1; }
+  .slideshow-edit-row input.slide-title-input{
+    width:100%; margin-bottom:6px; padding:6px 8px; border:1px solid var(--border); border-radius:5px;
+    font-family: system-ui, sans-serif; font-size:12.5px;
+  }
+  .slideshow-edit-row textarea.slide-body-input{
+    width:100%; padding:6px 8px; border:1px solid var(--border); border-radius:5px; font-family: system-ui, sans-serif;
+    font-size:12.5px; resize:vertical;
+  }
+  .slideshow-edit-actions{ display:flex; flex-direction:column; gap:4px; }
+
+  /* ---------- IMAGE HOTSPOTS ---------- */
+  .hotspot-activity{ border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:14px; background:#fff; }
+  .hotspot-activity-header{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .hotspot-activity-name{
+    flex:1; border:none; background:none; font-family: system-ui, sans-serif; font-size:13px; font-weight:600;
+    color:var(--ink); outline:none; padding:4px 2px; border-bottom:1px dashed transparent;
+  }
+  .hotspot-activity-name:focus{ border-bottom-color:var(--border); }
+  .hotspot-activity-name::placeholder{ color:#c7bda4; font-weight:400; }
+  .hotspot-add-hint{ font-family: system-ui, sans-serif; font-size:11px; color:var(--ink-soft); margin-bottom:8px; }
+  .hotspot-image-wrap{ position:relative; display:inline-block; max-width:100%; }
+  .hotspot-image-wrap img{ display:block; max-width:100%; height:auto; border-radius:6px; cursor:crosshair; }
+  .hotspot-image-wrap.view-mode img{ cursor:default; }
+  .hotspot-marker{
+    position:absolute; width:26px; height:26px; margin:-13px 0 0 -13px; border-radius:50%;
+    background:var(--terracotta); color:#fff; border:2px solid #fff; box-shadow:0 1px 5px rgba(0,0,0,0.35);
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; cursor:pointer; z-index:2;
+  }
+  .hotspot-marker:hover{ background:var(--ochre); }
+  .hotspot-popup{
+    position:absolute; z-index:5; background:#fff; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.28);
+    padding:12px 30px 12px 14px; width:220px; font-family: system-ui, sans-serif; transform:translate(-50%, 14px);
+  }
+  .hotspot-popup h5{ margin:0 0 6px; font-size:13px; color:var(--sage-dark); }
+  .hotspot-popup p{ margin:0; font-size:12px; color:var(--ink); line-height:1.5; white-space:pre-wrap; }
+  .hotspot-popup-close{ position:absolute; top:6px; right:8px; background:none; border:none; font-size:15px; color:var(--ink-soft); cursor:pointer; line-height:1; }
+  .hotspot-popup-close:hover{ color:var(--danger); }
+  .hotspot-fullscreen-btn{
+    position:absolute; top:8px; right:8px; background:rgba(20,16,10,0.6); color:#fff; border:none;
+    border-radius:5px; padding:5px 9px; font-size:13px; cursor:pointer; z-index:3;
+  }
+  .hotspot-fullscreen-btn:hover{ background:rgba(20,16,10,0.8); }
+  .hotspot-edit-list{ margin-top:12px; }
+  .hotspot-edit-item{ display:flex; gap:8px; align-items:flex-start; margin-bottom:8px; padding:8px 10px; background:var(--bg); border-radius:6px; }
+  .hotspot-edit-item .hotspot-edit-fields{ flex:1; }
+  .hotspot-edit-item input, .hotspot-edit-item textarea{
+    width:100%; margin-bottom:5px; padding:5px 7px; border:1px solid var(--border); border-radius:5px;
+    font-family: system-ui, sans-serif; font-size:12px;
+  }
+  .hotspot-fullscreen-overlay{
+    position:fixed; inset:0; background:rgba(10,8,5,0.9); z-index:200; display:flex; align-items:center;
+    justify-content:center; padding:30px;
+  }
+  .hotspot-fullscreen-overlay .hotspot-image-wrap{ max-width:92vw; max-height:88vh; }
+  .hotspot-fullscreen-overlay img{ max-width:92vw; max-height:88vh; width:auto; }
+  .hotspot-fullscreen-close{
+    position:fixed; top:20px; right:26px; background:rgba(255,255,255,0.15); color:#fff; border:none;
+    border-radius:50%; width:38px; height:38px; font-size:18px; cursor:pointer; z-index:201;
+  }
+
   /* week groups (planner) */
   .week-group{ margin:4px 0 8px; }
   .week-label{
@@ -876,6 +962,14 @@
           day.readings = Array.isArray(day.readings) ? day.readings : [];
           day.objectives = Array.isArray(day.objectives) ? day.objectives : [];
           day.qa = Array.isArray(day.qa) ? day.qa : [];
+          day.slideshows = Array.isArray(day.slideshows) ? day.slideshows : [];
+          day.slideshows.forEach(function(deck){
+            deck.slides = Array.isArray(deck.slides) ? deck.slides : [];
+          });
+          day.hotspotActivities = Array.isArray(day.hotspotActivities) ? day.hotspotActivities : [];
+          day.hotspotActivities.forEach(function(activity){
+            activity.hotspots = Array.isArray(activity.hotspots) ? activity.hotspots : [];
+          });
           day.notes = day.notes || "";
           day.reflection = day.reflection || "";
           day.sourceText = day.sourceText || "";
@@ -1311,6 +1405,461 @@
       if(qInputs.length) qInputs[qInputs.length-1].focus();
     };
   }
+
+  function toggleAllQA(listId){
+    var listEl = document.getElementById(listId);
+    if(!listEl) return;
+    var answers = listEl.querySelectorAll(".qa-a");
+    if(!answers.length) return;
+    var anyHidden = Array.prototype.some.call(answers, function(a){ return a.classList.contains("hidden-answer"); });
+    answers.forEach(function(a){
+      var revealBtn = a.parentElement.querySelector(".qa-reveal-btn");
+      if(anyHidden){
+        a.classList.remove("hidden-answer");
+        if(revealBtn) revealBtn.textContent = "Hide answer";
+      } else {
+        a.classList.add("hidden-answer");
+        if(revealBtn) revealBtn.textContent = "Show answer";
+      }
+    });
+  }
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "qa-expand-all-btn"){
+      var listId = document.getElementById("qa-list") ? "qa-list" : "qa-list-chapter";
+      toggleAllQA(listId);
+    }
+  });
+
+  // ================= SLIDESHOWS / SCENARIOS =================
+  var slideshowViewIndex = {};   // deck.id -> currently viewed slide index (transient, not synced)
+  var slideshowEditingSet = {};  // deck.id -> true while its slide list is open for editing (transient)
+
+  function renderSlideshows(ctx){
+    ctx.day.slideshows = ctx.day.slideshows || [];
+    var listEl = document.getElementById("slideshows-list");
+    if(!listEl) return;
+    listEl.innerHTML = "";
+
+    ctx.day.slideshows.forEach(function(deck){
+      deck.slides = deck.slides || [];
+      var deckEl = document.createElement("div");
+      deckEl.className = "slideshow-deck";
+
+      var header = document.createElement("div");
+      header.className = "slideshow-deck-header";
+
+      var nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.className = "slideshow-deck-name";
+      nameInput.placeholder = "Name this slideshow, e.g. ACA Code Summary";
+      nameInput.value = deck.name || "";
+      nameInput.addEventListener("input", function(){
+        deck.name = nameInput.value;
+        scheduleSave(function(){ ctx.day.updated = Date.now(); });
+      });
+      header.appendChild(nameInput);
+
+      var editBtn = document.createElement("button");
+      editBtn.className = "card-collapse-btn";
+      editBtn.textContent = slideshowEditingSet[deck.id] ? "Done editing" : "✎ Edit slides";
+      editBtn.addEventListener("click", function(){
+        slideshowEditingSet[deck.id] = !slideshowEditingSet[deck.id];
+        renderSlideshows(ctx);
+      });
+      header.appendChild(editBtn);
+
+      var deleteDeckBtn = document.createElement("button");
+      deleteDeckBtn.className = "card-collapse-btn";
+      deleteDeckBtn.title = "Delete this slideshow";
+      deleteDeckBtn.textContent = "✕";
+      deleteDeckBtn.addEventListener("click", function(){
+        if(confirm('Delete "' + (deck.name || "this slideshow") + '"? (Undo available for a few seconds after.)')){
+          var idx = ctx.day.slideshows.indexOf(deck);
+          ctx.day.slideshows = ctx.day.slideshows.filter(function(d){ return d.id !== deck.id; });
+          persist(); renderSlideshows(ctx);
+          showUndoToast('Deleted "' + (deck.name || "slideshow") + '"', function(){
+            ctx.day.slideshows.splice(idx, 0, deck);
+            persist(); renderSlideshows(ctx);
+          });
+        }
+      });
+      header.appendChild(deleteDeckBtn);
+
+      deckEl.appendChild(header);
+
+      if(slideshowEditingSet[deck.id]){
+        deck.slides.forEach(function(slide, idx){
+          var row = document.createElement("div");
+          row.className = "slideshow-edit-row";
+          row.innerHTML =
+            '<div class="slide-fields">' +
+              '<input type="text" class="slide-title-input" placeholder="Slide title, e.g. 6.2 Client self-determination">' +
+              '<textarea class="slide-body-input" rows="3" placeholder="Slide content, in your own words…"></textarea>' +
+            '</div>' +
+            '<div class="slideshow-edit-actions">' +
+              '<button class="day-move-btn" title="Move up">▲</button>' +
+              '<button class="day-move-btn" title="Move down">▼</button>' +
+              '<button class="remove-reading" title="Remove slide">✕</button>' +
+            '</div>';
+          var titleInput = row.querySelector(".slide-title-input");
+          var bodyInput = row.querySelector(".slide-body-input");
+          titleInput.value = slide.title || "";
+          bodyInput.value = slide.body || "";
+          titleInput.addEventListener("input", function(){
+            slide.title = titleInput.value;
+            scheduleSave(function(){ ctx.day.updated = Date.now(); });
+          });
+          bodyInput.addEventListener("input", function(){
+            slide.body = bodyInput.value;
+            scheduleSave(function(){ ctx.day.updated = Date.now(); });
+          });
+          var actionBtns = row.querySelectorAll(".slideshow-edit-actions button");
+          actionBtns[0].addEventListener("click", function(){
+            if(idx > 0){ deck.slides.splice(idx,1); deck.slides.splice(idx-1,0,slide); persist(); renderSlideshows(ctx); }
+          });
+          actionBtns[1].addEventListener("click", function(){
+            if(idx < deck.slides.length-1){ deck.slides.splice(idx,1); deck.slides.splice(idx+1,0,slide); persist(); renderSlideshows(ctx); }
+          });
+          actionBtns[2].addEventListener("click", function(){
+            deck.slides = deck.slides.filter(function(s){ return s.id !== slide.id; });
+            persist(); renderSlideshows(ctx);
+          });
+          deckEl.appendChild(row);
+        });
+        var addSlideBtn = document.createElement("button");
+        addSlideBtn.className = "add-objective-btn";
+        addSlideBtn.textContent = "+ Add slide";
+        addSlideBtn.addEventListener("click", function(){
+          deck.slides.push({ id:uid(), title:"", body:"" });
+          persist(); renderSlideshows(ctx);
+        });
+        deckEl.appendChild(addSlideBtn);
+      } else {
+        var total = deck.slides.length;
+        if(!total){
+          var empty = document.createElement("div");
+          empty.className = "slideshow-empty";
+          empty.textContent = 'No slides yet — click "✎ Edit slides" to add some.';
+          deckEl.appendChild(empty);
+        } else {
+          if(slideshowViewIndex[deck.id] === undefined || slideshowViewIndex[deck.id] >= total){
+            slideshowViewIndex[deck.id] = Math.min(slideshowViewIndex[deck.id] || 0, total - 1);
+          }
+          var idx2 = slideshowViewIndex[deck.id];
+          var slide2 = deck.slides[idx2];
+
+          var counter = document.createElement("div");
+          counter.className = "slideshow-counter";
+          counter.textContent = "Slide " + (idx2+1) + " of " + total;
+          deckEl.appendChild(counter);
+
+          var viewer = document.createElement("div");
+          viewer.className = "slideshow-viewer";
+          viewer.tabIndex = 0;
+          viewer.title = "Click here, then use the left/right arrow keys to navigate";
+
+          var slideDiv = document.createElement("div");
+          slideDiv.className = "slideshow-slide";
+          if(slide2.title){
+            var h4 = document.createElement("h4");
+            h4.textContent = slide2.title;
+            slideDiv.appendChild(h4);
+          }
+          var bodyDiv = document.createElement("div");
+          bodyDiv.className = "slideshow-slide-body";
+          bodyDiv.textContent = slide2.body || "";
+          slideDiv.appendChild(bodyDiv);
+          viewer.appendChild(slideDiv);
+
+          function goPrev(){ if(slideshowViewIndex[deck.id] > 0){ slideshowViewIndex[deck.id]--; renderSlideshows(ctx); } }
+          function goNext(){ if(slideshowViewIndex[deck.id] < total - 1){ slideshowViewIndex[deck.id]++; renderSlideshows(ctx); } }
+          viewer.addEventListener("keydown", function(e){
+            if(e.key === "ArrowLeft"){ e.preventDefault(); goPrev(); }
+            else if(e.key === "ArrowRight"){ e.preventDefault(); goNext(); }
+          });
+
+          var nav = document.createElement("div");
+          nav.className = "slideshow-nav";
+          var prevBtn = document.createElement("button");
+          prevBtn.textContent = "‹";
+          prevBtn.title = "Previous slide";
+          prevBtn.disabled = idx2 === 0;
+          prevBtn.addEventListener("click", goPrev);
+          var countSpan = document.createElement("span");
+          countSpan.className = "slideshow-nav-count";
+          countSpan.textContent = (idx2+1) + " / " + total;
+          var nextBtn = document.createElement("button");
+          nextBtn.textContent = "›";
+          nextBtn.title = "Next slide";
+          nextBtn.disabled = idx2 === total - 1;
+          nextBtn.addEventListener("click", goNext);
+          nav.appendChild(prevBtn);
+          nav.appendChild(countSpan);
+          nav.appendChild(nextBtn);
+
+          deckEl.appendChild(viewer);
+          deckEl.appendChild(nav);
+        }
+      }
+
+      listEl.appendChild(deckEl);
+    });
+  }
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "add-slideshow-btn"){
+      var ctx = activeDayCtx();
+      if(!ctx) return;
+      ctx.day.slideshows = ctx.day.slideshows || [];
+      ctx.day.slideshows.push({ id:uid(), name:"", slides:[] });
+      persist();
+      renderSlideshows(ctx);
+    }
+  });
+
+  // ================= IMAGE HOTSPOTS =================
+  var hotspotEditingSet = {};  // activity.id -> true while its hotspots are open for editing (transient)
+  var hotspotOpenPopup = {};   // activity.id -> currently open hotspot.id, or null (transient)
+
+  function openHotspotFullscreen(activity){
+    var overlay = document.createElement("div");
+    overlay.className = "hotspot-fullscreen-overlay";
+    var wrap = document.createElement("div");
+    wrap.className = "hotspot-image-wrap view-mode";
+    var img = document.createElement("img");
+    img.src = activity.imageDataUrl;
+    wrap.appendChild(img);
+    (activity.hotspots || []).forEach(function(hotspot, i){
+      var marker = document.createElement("div");
+      marker.className = "hotspot-marker";
+      marker.style.left = hotspot.xPercent + "%";
+      marker.style.top = hotspot.yPercent + "%";
+      marker.textContent = (i+1);
+      marker.addEventListener("click", function(e){
+        e.stopPropagation();
+        var existing = wrap.querySelector(".hotspot-popup");
+        if(existing) existing.remove();
+        if(marker.dataset.open === "1"){ marker.dataset.open = "0"; return; }
+        wrap.querySelectorAll(".hotspot-marker").forEach(function(m){ m.dataset.open = "0"; });
+        marker.dataset.open = "1";
+        var popup = document.createElement("div");
+        popup.className = "hotspot-popup";
+        popup.style.left = hotspot.xPercent + "%";
+        popup.style.top = hotspot.yPercent + "%";
+        popup.innerHTML = (hotspot.label ? "<h5></h5>" : "") + "<p></p><button class=\"hotspot-popup-close\">✕</button>";
+        if(hotspot.label) popup.querySelector("h5").textContent = hotspot.label;
+        popup.querySelector("p").textContent = hotspot.info || "";
+        popup.querySelector(".hotspot-popup-close").addEventListener("click", function(e){
+          e.stopPropagation();
+          popup.remove();
+          marker.dataset.open = "0";
+        });
+        wrap.appendChild(popup);
+      });
+      wrap.appendChild(marker);
+    });
+    overlay.appendChild(wrap);
+    var closeBtn = document.createElement("button");
+    closeBtn.className = "hotspot-fullscreen-close";
+    closeBtn.textContent = "✕";
+    closeBtn.title = "Close full screen";
+    closeBtn.addEventListener("click", function(){ overlay.remove(); });
+    overlay.appendChild(closeBtn);
+    overlay.addEventListener("click", function(e){ if(e.target === overlay) overlay.remove(); });
+    var escHandler = function(e){
+      if(e.key === "Escape"){ overlay.remove(); document.removeEventListener("keydown", escHandler); }
+    };
+    document.addEventListener("keydown", escHandler);
+    document.body.appendChild(overlay);
+  }
+
+  function renderHotspotActivities(ctx){
+    ctx.day.hotspotActivities = ctx.day.hotspotActivities || [];
+    var listEl = document.getElementById("hotspots-list");
+    if(!listEl) return;
+    listEl.innerHTML = "";
+
+    ctx.day.hotspotActivities.forEach(function(activity){
+      activity.hotspots = activity.hotspots || [];
+      var activityEl = document.createElement("div");
+      activityEl.className = "hotspot-activity";
+
+      var header = document.createElement("div");
+      header.className = "hotspot-activity-header";
+      var nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.className = "hotspot-activity-name";
+      nameInput.placeholder = "Name this activity, e.g. Meet the characters";
+      nameInput.value = activity.name || "";
+      nameInput.addEventListener("input", function(){
+        activity.name = nameInput.value;
+        scheduleSave(function(){ ctx.day.updated = Date.now(); });
+      });
+      header.appendChild(nameInput);
+
+      if(activity.imageDataUrl){
+        var editBtn = document.createElement("button");
+        editBtn.className = "card-collapse-btn";
+        editBtn.textContent = hotspotEditingSet[activity.id] ? "Done editing" : "✎ Edit hotspots";
+        editBtn.addEventListener("click", function(){
+          hotspotEditingSet[activity.id] = !hotspotEditingSet[activity.id];
+          renderHotspotActivities(ctx);
+        });
+        header.appendChild(editBtn);
+      }
+
+      var deleteBtn = document.createElement("button");
+      deleteBtn.className = "card-collapse-btn";
+      deleteBtn.title = "Delete this activity";
+      deleteBtn.textContent = "✕";
+      deleteBtn.addEventListener("click", function(){
+        if(confirm('Delete "' + (activity.name || "this activity") + '"? (Undo available for a few seconds after.)')){
+          var idx = ctx.day.hotspotActivities.indexOf(activity);
+          ctx.day.hotspotActivities = ctx.day.hotspotActivities.filter(function(a){ return a.id !== activity.id; });
+          persist(); renderHotspotActivities(ctx);
+          showUndoToast('Deleted "' + (activity.name || "activity") + '"', function(){
+            ctx.day.hotspotActivities.splice(idx, 0, activity);
+            persist(); renderHotspotActivities(ctx);
+          });
+        }
+      });
+      header.appendChild(deleteBtn);
+      activityEl.appendChild(header);
+
+      if(!activity.imageDataUrl){
+        var uploadHint = document.createElement("div");
+        uploadHint.className = "hotspot-add-hint";
+        uploadHint.textContent = "Upload an image, then click on it to drop hotspot markers.";
+        activityEl.appendChild(uploadHint);
+
+        var fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "image/*";
+        fileInput.addEventListener("change", function(){
+          var file = fileInput.files[0];
+          if(!file) return;
+          readFileAsImage(file, function(dataUrl){
+            activity.imageDataUrl = dataUrl;
+            persist(); renderHotspotActivities(ctx);
+          });
+        });
+        activityEl.appendChild(fileInput);
+      } else {
+        var editing = !!hotspotEditingSet[activity.id];
+        if(editing){
+          var editHint = document.createElement("div");
+          editHint.className = "hotspot-add-hint";
+          editHint.textContent = "Click anywhere on the image to add a hotspot marker. Click an existing marker to remove it.";
+          activityEl.appendChild(editHint);
+        }
+
+        var wrap = document.createElement("div");
+        wrap.className = "hotspot-image-wrap" + (editing ? "" : " view-mode");
+        var img = document.createElement("img");
+        img.src = activity.imageDataUrl;
+        wrap.appendChild(img);
+
+        var fsBtn = document.createElement("button");
+        fsBtn.className = "hotspot-fullscreen-btn";
+        fsBtn.textContent = "⛶ Full screen";
+        fsBtn.title = "View full screen";
+        fsBtn.addEventListener("click", function(e){
+          e.stopPropagation();
+          openHotspotFullscreen(activity);
+        });
+        wrap.appendChild(fsBtn);
+
+        activity.hotspots.forEach(function(hotspot, i){
+          var marker = document.createElement("div");
+          marker.className = "hotspot-marker";
+          marker.style.left = hotspot.xPercent + "%";
+          marker.style.top = hotspot.yPercent + "%";
+          marker.textContent = (i+1);
+          marker.addEventListener("click", function(e){
+            e.stopPropagation();
+            if(editing){
+              if(confirm("Remove this hotspot marker?")){
+                activity.hotspots = activity.hotspots.filter(function(h){ return h.id !== hotspot.id; });
+                persist(); renderHotspotActivities(ctx);
+              }
+            } else {
+              hotspotOpenPopup[activity.id] = (hotspotOpenPopup[activity.id] === hotspot.id) ? null : hotspot.id;
+              renderHotspotActivities(ctx);
+            }
+          });
+          wrap.appendChild(marker);
+
+          if(!editing && hotspotOpenPopup[activity.id] === hotspot.id){
+            var popup = document.createElement("div");
+            popup.className = "hotspot-popup";
+            popup.style.left = hotspot.xPercent + "%";
+            popup.style.top = hotspot.yPercent + "%";
+            popup.innerHTML = (hotspot.label ? "<h5></h5>" : "") + "<p></p><button class=\"hotspot-popup-close\">✕</button>";
+            if(hotspot.label) popup.querySelector("h5").textContent = hotspot.label;
+            popup.querySelector("p").textContent = hotspot.info || "";
+            popup.querySelector(".hotspot-popup-close").addEventListener("click", function(e){
+              e.stopPropagation();
+              hotspotOpenPopup[activity.id] = null;
+              renderHotspotActivities(ctx);
+            });
+            wrap.appendChild(popup);
+          }
+        });
+
+        if(editing){
+          wrap.addEventListener("click", function(e){
+            if(e.target !== img) return;
+            var rect = img.getBoundingClientRect();
+            var xPct = ((e.clientX - rect.left) / rect.width) * 100;
+            var yPct = ((e.clientY - rect.top) / rect.height) * 100;
+            activity.hotspots.push({ id:uid(), xPercent:xPct, yPercent:yPct, label:"", info:"" });
+            persist(); renderHotspotActivities(ctx);
+          });
+        }
+
+        activityEl.appendChild(wrap);
+
+        if(editing && activity.hotspots.length){
+          var editList = document.createElement("div");
+          editList.className = "hotspot-edit-list";
+          activity.hotspots.forEach(function(hotspot, i){
+            var item = document.createElement("div");
+            item.className = "hotspot-edit-item";
+            item.innerHTML =
+              '<div class="hotspot-edit-fields">' +
+                '<input type="text" class="hotspot-label-input" placeholder="Label, e.g. Brian (client)">' +
+                '<textarea class="hotspot-info-input" rows="2" placeholder="Info revealed when clicked, in your own words…"></textarea>' +
+              '</div>';
+            var labelInput = item.querySelector(".hotspot-label-input");
+            var infoInput = item.querySelector(".hotspot-info-input");
+            labelInput.value = hotspot.label || "";
+            infoInput.value = hotspot.info || "";
+            labelInput.addEventListener("input", function(){
+              hotspot.label = labelInput.value;
+              scheduleSave(function(){ ctx.day.updated = Date.now(); });
+            });
+            infoInput.addEventListener("input", function(){
+              hotspot.info = infoInput.value;
+              scheduleSave(function(){ ctx.day.updated = Date.now(); });
+            });
+            editList.appendChild(item);
+          });
+          activityEl.appendChild(editList);
+        }
+      }
+
+      listEl.appendChild(activityEl);
+    });
+  }
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "add-hotspot-activity-btn"){
+      var ctx = activeDayCtx();
+      if(!ctx) return;
+      ctx.day.hotspotActivities = ctx.day.hotspotActivities || [];
+      ctx.day.hotspotActivities.push({ id:uid(), name:"", imageDataUrl:"", hotspots:[] });
+      persist();
+      renderHotspotActivities(ctx);
+    }
+  });
 
   // ================= IMAGE INSERT =================
   function insertImageDataUrl(dataUrl){
@@ -1859,10 +2408,24 @@
         '</div>' +
       '</div>' +
       '<div class="card" id="qa-card">' +
-        '<h3><span>Questions &amp; Answers</span><button class="card-collapse-btn" id="qa-collapse-btn"><span class="chevron">▾</span>Hide</button></h3>' +
+        '<h3><span>Questions &amp; Answers</span><button class="card-collapse-btn" id="qa-expand-all-btn">⇕ Expand all</button><button class="card-collapse-btn" id="qa-collapse-btn"><span class="chevron">▾</span>Hide</button></h3>' +
         '<div class="card-collapsible-body" id="qa-body">' +
           '<div id="qa-list"></div>' +
           '<button class="add-qa-btn" id="add-qa-btn">+ Add a question</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card" id="slideshows-card">' +
+        '<h3><span>Slideshows &amp; Scenarios</span><button class="card-collapse-btn" id="slideshows-collapse-btn"><span class="chevron">▾</span>Hide</button></h3>' +
+        '<div class="card-collapsible-body" id="slideshows-body">' +
+          '<div id="slideshows-list"></div>' +
+          '<button class="add-objective-btn" id="add-slideshow-btn">+ Add a slideshow or scenario</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card" id="hotspots-card">' +
+        '<h3><span>Image Hotspots</span><button class="card-collapse-btn" id="hotspots-collapse-btn"><span class="chevron">▾</span>Hide</button></h3>' +
+        '<div class="card-collapsible-body" id="hotspots-body">' +
+          '<div id="hotspots-list"></div>' +
+          '<button class="add-objective-btn" id="add-hotspot-activity-btn">+ Add an image with hotspots</button>' +
         '</div>' +
       '</div>' +
       '<div class="card reflection" id="reflection-card">' +
@@ -1872,6 +2435,8 @@
 
     renderReadings(ctx);
     renderQA(ctx.day, "qa-list", "add-qa-btn");
+    renderSlideshows(ctx);
+    renderHotspotActivities(ctx);
 
     var qaCollapseBtn = document.getElementById("qa-collapse-btn");
     var qaBody = document.getElementById("qa-body");
@@ -1879,6 +2444,22 @@
       var collapsed = qaBody.classList.toggle("collapsed");
       qaCollapseBtn.classList.toggle("collapsed", collapsed);
       qaCollapseBtn.lastChild.textContent = collapsed ? "Show" : "Hide";
+    });
+
+    var slideshowsCollapseBtn = document.getElementById("slideshows-collapse-btn");
+    var slideshowsBody = document.getElementById("slideshows-body");
+    slideshowsCollapseBtn.addEventListener("click", function(){
+      var collapsed = slideshowsBody.classList.toggle("collapsed");
+      slideshowsCollapseBtn.classList.toggle("collapsed", collapsed);
+      slideshowsCollapseBtn.lastChild.textContent = collapsed ? "Show" : "Hide";
+    });
+
+    var hotspotsCollapseBtn = document.getElementById("hotspots-collapse-btn");
+    var hotspotsBody = document.getElementById("hotspots-body");
+    hotspotsCollapseBtn.addEventListener("click", function(){
+      var collapsed = hotspotsBody.classList.toggle("collapsed");
+      hotspotsCollapseBtn.classList.toggle("collapsed", collapsed);
+      hotspotsCollapseBtn.lastChild.textContent = collapsed ? "Show" : "Hide";
     });
 
     var readingsCollapseBtn = document.getElementById("readings-collapse-btn");
@@ -2231,7 +2812,7 @@
         '</div>' +
       '</div>' +
       '<div class="card" id="qa-card">' +
-        '<h3><span>Questions &amp; Answers</span><button class="card-collapse-btn" id="qa-collapse-btn"><span class="chevron">▾</span>Hide</button></h3>' +
+        '<h3><span>Questions &amp; Answers</span><button class="card-collapse-btn" id="qa-expand-all-btn">⇕ Expand all</button><button class="card-collapse-btn" id="qa-collapse-btn"><span class="chevron">▾</span>Hide</button></h3>' +
         '<div class="card-collapsible-body" id="qa-body">' +
           '<div id="qa-list-chapter"></div>' +
           '<button class="add-qa-btn" id="add-qa-btn-chapter">+ Add a question</button>' +
@@ -2969,7 +3550,10 @@
             var readingsText = (day.readings||[]).map(function(r){return r.text;}).join(" ");
             var objectivesText = (day.objectives||[]).map(function(o){return o.text;}).join(" ");
             var qaText = (day.qa||[]).map(function(q){return q.question + " " + q.answer;}).join(" ");
-            var haystack = (day.label + " " + day.topic + " " + readingsText + " " + objectivesText + " " + qaText + " " + stripHtml(day.notes) + " " + stripHtml(day.reflection) + " " + stripHtml(day.sourceText)).toLowerCase();
+            var slideshowText = (day.slideshows||[]).map(function(deck){
+              return deck.name + " " + (deck.slides||[]).map(function(s){ return s.title + " " + s.body; }).join(" ");
+            }).join(" ");
+            var haystack = (day.label + " " + day.topic + " " + readingsText + " " + objectivesText + " " + qaText + " " + slideshowText + " " + stripHtml(day.notes) + " " + stripHtml(day.reflection) + " " + stripHtml(day.sourceText)).toLowerCase();
             if(haystack.indexOf(q) !== -1){
               hits.push({label: day.topic || day.label, path: unit.title + " · Week " + week.number + " · " + day.label,
                 go: function(){ state.openUnitId = unit.id; state.activeDayId = day.id; }});
