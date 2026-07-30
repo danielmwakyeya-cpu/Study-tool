@@ -495,6 +495,24 @@
   .reference-list-item{ padding:8px 0; border-bottom:1px solid var(--border); }
   .reference-list-item:last-child{ border-bottom:none; }
 
+  .tc-added{ background:#C9E4B0; }
+  .tc-removed{ background:#F0C4DC; text-decoration:line-through; color:#7a4a55; }
+  .style-item{ display:flex; align-items:center; gap:8px; padding:7px 10px; margin-bottom:6px; background:var(--bg); border-radius:6px; }
+  .style-item .style-preview-btn{ flex:1; text-align:left; background:none; border:1px solid var(--border); border-radius:5px; padding:6px 10px; font-family: system-ui, sans-serif; font-size:12.5px; cursor:pointer; color:var(--ink); }
+  .style-item .style-preview-btn:hover{ border-color:var(--sage); }
+  .style-item .remove-reading{ background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:14px; }
+  #track-changes-btn.tracking-active{ background:var(--terracotta); color:#fff; border-color:var(--terracotta); }
+  #format-painter-btn.tracking-active{ background:var(--sage); color:#fff; border-color:var(--sage); }
+
+  .lookup-pos{ font-family: Georgia, serif; font-style:italic; font-size:12.5px; color:var(--sage-dark); margin-bottom:4px; }
+  .lookup-def{ font-family: system-ui, sans-serif; font-size:13px; margin-bottom:4px; padding-left:10px; color:var(--ink); }
+  .lookup-syn-header{ font-family: system-ui, sans-serif; font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--sage-dark); margin:10px 0 6px; border-top:1px solid var(--border); padding-top:10px; }
+  .lookup-syn-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+  .lookup-syn-chip{ font-family: system-ui, sans-serif; font-size:12px; padding:5px 11px; border-radius:14px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+  .lookup-syn-chip:hover{ border-color:var(--sage); background:var(--sage-tint); }
+  .specialchar-btn{ font-size:16px; padding:8px 0; border:1px solid var(--border); border-radius:6px; background:#fff; cursor:pointer; }
+  .specialchar-btn:hover{ border-color:var(--sage); background:var(--sage-tint); }
+
   .rich-editable{
     font-family: var(--note-font-family); font-size: var(--note-font-size); line-height:1.7; color:var(--ink); outline:none; min-height:120px;
   }
@@ -847,6 +865,122 @@
     <div id="widget-modal-body"></div>
     <div class="modal-actions">
       <button id="widget-modal-close-btn" class="primary">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="keke-modal-backdrop">
+  <div class="modal" style="width:min(520px, 92vw); max-height:85vh; overflow-y:auto;">
+    <h3>💬 Ask Keke</h3>
+
+    <div id="keke-setup-section" style="display:none;">
+      <p style="font-family: system-ui, sans-serif; font-size:12px; color:var(--ink-soft); line-height:1.6; margin:0 0 10px;">
+        Keke uses Claude to help you write, summarize, and organize your notes. You'll need your own free Anthropic API key —
+        get one at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" style="color:var(--terracotta);">console.anthropic.com</a>.
+        It's stored only in this browser and never uploaded anywhere — not even synced to Firebase.
+      </p>
+      <label>Anthropic API key</label>
+      <input type="password" id="keke-api-key-input" placeholder="sk-ant-..." style="width:100%; padding:7px 9px; border-radius:5px; border:1px solid var(--border); font-family: system-ui, sans-serif; font-size:13px;">
+      <div class="modal-actions">
+        <button id="keke-cancel-btn">Cancel</button>
+        <button id="keke-save-key-btn" class="primary">Save &amp; continue</button>
+      </div>
+    </div>
+
+    <div id="keke-chat-section" style="display:none;">
+      <label style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--ink-soft); text-transform:none; letter-spacing:0; margin-bottom:10px;">
+        <input type="checkbox" id="keke-include-context" checked style="width:auto; margin:0;"> Include my current notes as context
+      </label>
+      <label>What do you need help with?</label>
+      <textarea id="keke-user-input" rows="3" placeholder="e.g. Help me phrase this reflection more clearly, or summarize the key points from these notes…" style="width:100%; padding:8px 9px; border:1px solid var(--border); border-radius:6px; font-family: system-ui, sans-serif; font-size:13px; resize:vertical;"></textarea>
+      <div style="margin-top:8px; display:flex; align-items:center; gap:12px;">
+        <button id="keke-send-btn" class="primary" style="padding:8px 16px; border-radius:6px; border:none; font-family: system-ui, sans-serif; font-size:12.5px; cursor:pointer;">Ask Keke</button>
+        <button id="keke-change-key-btn" style="background:none; border:none; color:var(--ink-soft); font-size:11px; text-decoration:underline; cursor:pointer;">Change API key</button>
+      </div>
+      <div id="keke-status" style="font-family: system-ui, sans-serif; font-size:11px; color:var(--ink-soft); margin-top:8px;"></div>
+      <div id="keke-response-wrap" style="display:none; margin-top:12px;">
+        <div id="keke-response" style="background:var(--sage-tint); border-radius:8px; padding:14px; font-family: system-ui, sans-serif; font-size:13px; line-height:1.6; white-space:pre-wrap; max-height:260px; overflow-y:auto;"></div>
+        <div style="margin-top:8px; display:flex; gap:8px;">
+          <button id="keke-insert-btn" class="primary" style="padding:7px 14px; border-radius:6px; border:none; font-family: system-ui, sans-serif; font-size:12px; cursor:pointer;">Insert into notes</button>
+          <button id="keke-copy-btn" style="padding:7px 14px; border-radius:6px; border:1px solid var(--border); background:#fff; font-family: system-ui, sans-serif; font-size:12px; cursor:pointer;">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions" id="keke-close-row" style="display:none;">
+      <button id="keke-close-btn">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="styles-modal-backdrop">
+  <div class="modal" style="width:min(440px, 92vw); max-height:85vh; overflow-y:auto;">
+    <h3>Paragraph styles</h3>
+    <div id="styles-list"></div>
+    <div style="border-top:1px solid var(--border); margin-top:12px; padding-top:12px;">
+      <label>Style name</label>
+      <input type="text" id="style-name-input" placeholder="e.g. Key Term">
+      <label>Block type</label>
+      <select id="style-block-select">
+        <option value="">Body text</option>
+        <option value="H2">Heading</option>
+        <option value="BLOCKQUOTE">Quote</option>
+      </select>
+      <label style="display:flex; align-items:center; gap:16px; text-transform:none; letter-spacing:0; margin-top:10px;">
+        <span style="display:flex; align-items:center; gap:4px;"><input type="checkbox" id="style-bold-check" style="width:auto;"> Bold</span>
+        <span style="display:flex; align-items:center; gap:4px;"><input type="checkbox" id="style-italic-check" style="width:auto;"> Italic</span>
+        <span style="display:flex; align-items:center; gap:4px;"><input type="checkbox" id="style-underline-check" style="width:auto;"> Underline</span>
+      </label>
+      <label style="display:flex; align-items:center; gap:6px; text-transform:none; letter-spacing:0; margin-top:10px;">
+        <input type="checkbox" id="style-use-color-check" style="width:auto;"> Text colour
+        <input type="color" id="style-color-input" value="#2E2A22" style="width:36px; padding:0; border:none;">
+      </label>
+      <label style="display:flex; align-items:center; gap:6px; text-transform:none; letter-spacing:0;">
+        <input type="checkbox" id="style-use-highlight-check" style="width:auto;"> Highlight colour
+        <input type="color" id="style-highlight-input" value="#F5D98B" style="width:36px; padding:0; border:none;">
+      </label>
+      <button class="add-objective-btn" id="save-style-btn">+ Save style</button>
+    </div>
+    <div class="modal-actions">
+      <button id="styles-modal-close-btn" class="primary">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="lookup-modal-backdrop">
+  <div class="modal" style="width:min(480px, 92vw); max-height:82vh; overflow-y:auto;">
+    <h3>📖 Look up a word</h3>
+    <div style="display:flex; gap:8px; margin-bottom:10px;">
+      <input type="text" id="lookup-word-input" placeholder="Type a word, or select one first" style="flex:1; padding:7px 9px; border-radius:5px; border:1px solid var(--border); font-family: system-ui, sans-serif; font-size:13px;">
+      <button id="lookup-search-btn" class="primary" style="padding:7px 14px; border-radius:6px; border:none; font-family: system-ui, sans-serif; font-size:12.5px; cursor:pointer;">Look up</button>
+    </div>
+    <div id="lookup-status" style="font-family: system-ui, sans-serif; font-size:11px; color:var(--ink-soft); margin-bottom:8px;"></div>
+    <div id="lookup-results"></div>
+    <div class="modal-actions">
+      <button id="lookup-close-btn" class="primary">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="specialchars-modal-backdrop">
+  <div class="modal" style="width:min(420px, 92vw); max-height:80vh; overflow-y:auto;">
+    <h3>Ω Special characters</h3>
+    <p style="font-family: system-ui, sans-serif; font-size:11px; color:var(--ink-soft); margin:0 0 10px;">Click a character to insert it — the box stays open so you can insert a few in a row.</p>
+    <div id="specialchars-grid" style="display:grid; grid-template-columns:repeat(8, 1fr); gap:6px;"></div>
+    <div class="modal-actions">
+      <button id="specialchars-close-btn" class="primary">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="track-changes-modal-backdrop">
+  <div class="modal" style="width:min(560px, 92vw); max-height:85vh; overflow-y:auto;">
+    <h3>Review changes</h3>
+    <div id="track-changes-summary" style="font-family: system-ui, sans-serif; font-size:11.5px; color:var(--ink-soft); margin-bottom:10px;"></div>
+    <div id="track-changes-body" style="background:var(--paper); border:1px solid var(--border); border-radius:8px; padding:14px; font-size:13.5px; line-height:1.8; max-height:50vh; overflow-y:auto;"></div>
+    <div class="modal-actions">
+      <button id="track-changes-undo-btn">Undo all changes</button>
+      <button id="track-changes-keep-btn" class="primary">Keep changes</button>
     </div>
   </div>
 </div>
@@ -2581,6 +2715,210 @@
     document.querySelectorAll(".toolbar-dropdown-panel.show").forEach(function(p){ p.classList.remove("show"); });
   });
 
+  // ================= PARAGRAPH STYLES =================
+  var CUSTOM_STYLES_KEY = "counsellingStudyToolkit_customStyles";
+  function getCustomStyles(){
+    try{ return JSON.parse(localStorage.getItem(CUSTOM_STYLES_KEY) || "[]"); }catch(e){ return []; }
+  }
+  function saveCustomStylesList(list){
+    try{ localStorage.setItem(CUSTOM_STYLES_KEY, JSON.stringify(list)); }catch(e){}
+  }
+  function applyCustomStyle(style){
+    if(!activeEditable) return;
+    activeEditable.focus();
+    document.execCommand("formatBlock", false, style.block || "P");
+    if(style.bold && !document.queryCommandState("bold")) document.execCommand("bold");
+    if(style.italic && !document.queryCommandState("italic")) document.execCommand("italic");
+    if(style.underline && !document.queryCommandState("underline")) document.execCommand("underline");
+    if(style.color) document.execCommand("foreColor", false, style.color);
+    if(style.highlight) document.execCommand("hiliteColor", false, style.highlight);
+    activeEditable.dispatchEvent(new Event("input"));
+  }
+  function renderStylesDropdown(){
+    var panel = document.getElementById("styles-dropdown-panel");
+    if(!panel) return;
+    panel.innerHTML = "";
+    var styles = getCustomStyles();
+    if(!styles.length){
+      var emptyBtn = document.createElement("button");
+      emptyBtn.textContent = "No styles yet";
+      emptyBtn.disabled = true;
+      emptyBtn.style.opacity = "0.5";
+      panel.appendChild(emptyBtn);
+    } else {
+      styles.forEach(function(style){
+        var btn = document.createElement("button");
+        btn.textContent = style.name;
+        btn.addEventListener("click", function(){ applyCustomStyle(style); });
+        panel.appendChild(btn);
+      });
+    }
+    var manageBtn = document.createElement("button");
+    manageBtn.textContent = "⚙ Manage styles";
+    manageBtn.style.borderTop = "1px solid var(--border)";
+    manageBtn.style.marginTop = "4px";
+    manageBtn.style.paddingTop = "8px";
+    manageBtn.addEventListener("click", function(){ openStylesModal(); });
+    panel.appendChild(manageBtn);
+  }
+  function renderStylesModalList(){
+    var listEl = document.getElementById("styles-list");
+    var styles = getCustomStyles();
+    listEl.innerHTML = "";
+    if(!styles.length){
+      listEl.innerHTML = '<div style="font-family: system-ui, sans-serif; font-size:12px; color:var(--ink-soft);">No styles saved yet.</div>';
+    }
+    styles.forEach(function(style, idx){
+      var row = document.createElement("div");
+      row.className = "style-item";
+      var previewBtn = document.createElement("button");
+      previewBtn.className = "style-preview-btn";
+      previewBtn.textContent = style.name;
+      if(style.bold) previewBtn.style.fontWeight = "bold";
+      if(style.italic) previewBtn.style.fontStyle = "italic";
+      if(style.underline) previewBtn.style.textDecoration = "underline";
+      if(style.color) previewBtn.style.color = style.color;
+      if(style.highlight) previewBtn.style.background = style.highlight;
+      previewBtn.addEventListener("click", function(){ applyCustomStyle(style); });
+      var removeBtn = document.createElement("button");
+      removeBtn.className = "remove-reading";
+      removeBtn.title = "Remove style";
+      removeBtn.textContent = "✕";
+      removeBtn.addEventListener("click", function(){
+        var styles2 = getCustomStyles();
+        styles2.splice(idx, 1);
+        saveCustomStylesList(styles2);
+        renderStylesModalList();
+        renderStylesDropdown();
+      });
+      row.appendChild(previewBtn);
+      row.appendChild(removeBtn);
+      listEl.appendChild(row);
+    });
+  }
+  function openStylesModal(){
+    renderStylesModalList();
+    document.getElementById("styles-modal-backdrop").classList.add("show");
+  }
+  document.getElementById("save-style-btn").addEventListener("click", function(){
+    var name = document.getElementById("style-name-input").value.trim();
+    if(!name){ alert("Give your style a name first."); return; }
+    var style = {
+      name: name,
+      block: document.getElementById("style-block-select").value,
+      bold: document.getElementById("style-bold-check").checked,
+      italic: document.getElementById("style-italic-check").checked,
+      underline: document.getElementById("style-underline-check").checked,
+      color: document.getElementById("style-use-color-check").checked ? document.getElementById("style-color-input").value : null,
+      highlight: document.getElementById("style-use-highlight-check").checked ? document.getElementById("style-highlight-input").value : null
+    };
+    var styles = getCustomStyles();
+    styles.push(style);
+    saveCustomStylesList(styles);
+    document.getElementById("style-name-input").value = "";
+    document.getElementById("style-block-select").value = "";
+    document.getElementById("style-bold-check").checked = false;
+    document.getElementById("style-italic-check").checked = false;
+    document.getElementById("style-underline-check").checked = false;
+    document.getElementById("style-use-color-check").checked = false;
+    document.getElementById("style-use-highlight-check").checked = false;
+    renderStylesModalList();
+    renderStylesDropdown();
+  });
+  document.getElementById("styles-modal-close-btn").addEventListener("click", function(){
+    document.getElementById("styles-modal-backdrop").classList.remove("show");
+  });
+  document.getElementById("styles-modal-backdrop").addEventListener("click", function(e){
+    if(e.target === this) this.classList.remove("show");
+  });
+
+  // ================= TRACK CHANGES / SUGGESTION MODE =================
+  var trackChangesSnapshots = {}; // editable element id -> snapshot HTML captured when tracking started
+  function diffWords(oldText, newText){
+    var oldWords = oldText.split(/(\s+)/);
+    var newWords = newText.split(/(\s+)/);
+    var m = oldWords.length, n = newWords.length;
+    var dp = [];
+    for(var i = 0; i <= m; i++) dp.push(new Array(n + 1).fill(0));
+    for(var i2 = m - 1; i2 >= 0; i2--){
+      for(var j = n - 1; j >= 0; j--){
+        dp[i2][j] = (oldWords[i2] === newWords[j]) ? dp[i2 + 1][j + 1] + 1 : Math.max(dp[i2 + 1][j], dp[i2][j + 1]);
+      }
+    }
+    var result = [];
+    var i = 0, j = 0;
+    while(i < m && j < n){
+      if(oldWords[i] === newWords[j]){ result.push({ type: "same", text: oldWords[i] }); i++; j++; }
+      else if(dp[i + 1][j] >= dp[i][j + 1]){ result.push({ type: "removed", text: oldWords[i] }); i++; }
+      else { result.push({ type: "added", text: newWords[j] }); j++; }
+    }
+    while(i < m){ result.push({ type: "removed", text: oldWords[i] }); i++; }
+    while(j < n){ result.push({ type: "added", text: newWords[j] }); j++; }
+    return result;
+  }
+  function toggleTrackChanges(){
+    if(!activeEditable){ alert("Click into a notes area first, then try again."); return; }
+    var btn = document.getElementById("track-changes-btn");
+    var key = activeEditable.id;
+    if(trackChangesSnapshots[key] === undefined){
+      trackChangesSnapshots[key] = activeEditable.innerHTML;
+      if(btn){ btn.textContent = "🔍 Review changes"; btn.classList.add("tracking-active"); }
+    } else {
+      openTrackChangesReview(key);
+    }
+  }
+  function openTrackChangesReview(key){
+    var snapshotHtml = trackChangesSnapshots[key];
+    if(!activeEditable || activeEditable.id !== key){ alert("Click back into the notes area you were tracking, then try again."); return; }
+    var oldText = stripHtml(snapshotHtml);
+    var newText = stripHtml(activeEditable.innerHTML);
+    if(oldText.length + newText.length > 40000){
+      if(!confirm("This note is quite long — comparing changes might take a few seconds. Continue?")) return;
+    }
+    var diff = diffWords(oldText, newText);
+    var container = document.getElementById("track-changes-body");
+    container.innerHTML = "";
+    var addedCount = 0, removedCount = 0;
+    diff.forEach(function(part){
+      var span = document.createElement("span");
+      if(part.type === "added"){ span.className = "tc-added"; if(part.text.trim()) addedCount++; }
+      else if(part.type === "removed"){ span.className = "tc-removed"; if(part.text.trim()) removedCount++; }
+      span.textContent = part.text;
+      container.appendChild(span);
+    });
+    document.getElementById("track-changes-summary").textContent =
+      addedCount + " word" + (addedCount === 1 ? "" : "s") + " added, " + removedCount + " word" + (removedCount === 1 ? "" : "s") + " removed since you started tracking";
+    document.getElementById("track-changes-modal-backdrop").dataset.key = key;
+    document.getElementById("track-changes-modal-backdrop").classList.add("show");
+  }
+  function resetTrackChangesButton(){
+    var btn = document.getElementById("track-changes-btn");
+    if(btn){ btn.textContent = "📝 Track changes"; btn.classList.remove("tracking-active"); }
+  }
+  document.getElementById("track-changes-keep-btn").addEventListener("click", function(){
+    var key = document.getElementById("track-changes-modal-backdrop").dataset.key;
+    delete trackChangesSnapshots[key];
+    resetTrackChangesButton();
+    document.getElementById("track-changes-modal-backdrop").classList.remove("show");
+  });
+  document.getElementById("track-changes-undo-btn").addEventListener("click", function(){
+    var key = document.getElementById("track-changes-modal-backdrop").dataset.key;
+    var snapshotHtml = trackChangesSnapshots[key];
+    if(activeEditable && activeEditable.id === key && snapshotHtml !== undefined){
+      activeEditable.innerHTML = snapshotHtml;
+      activeEditable.dispatchEvent(new Event("input"));
+    }
+    delete trackChangesSnapshots[key];
+    resetTrackChangesButton();
+    document.getElementById("track-changes-modal-backdrop").classList.remove("show");
+  });
+  document.getElementById("track-changes-modal-backdrop").addEventListener("click", function(e){
+    if(e.target === this) this.classList.remove("show");
+  });
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "track-changes-btn") toggleTrackChanges();
+  });
+
   // ================= TEXT SHORTCUTS =================
   var TEXT_SHORTCUTS_KEY = "counsellingStudyToolkit_textShortcuts";
   function getTextShortcuts(){
@@ -2735,6 +3073,293 @@
       }).catch(function(){ prompt("Copy this reference list:", text); });
     } else {
       prompt("Copy this reference list:", text);
+    }
+  });
+
+  // ================= KEKE (AI WRITING ASSISTANT) =================
+  var KEKE_KEY_STORAGE = "counsellingStudyToolkit_kekeApiKey";
+  function getKekeApiKey(){
+    try{ return localStorage.getItem(KEKE_KEY_STORAGE) || ""; }catch(e){ return ""; }
+  }
+  function setKekeApiKey(key){
+    try{ localStorage.setItem(KEKE_KEY_STORAGE, key); }catch(e){}
+  }
+  function openKekeModal(){
+    var hasKey = !!getKekeApiKey();
+    document.getElementById("keke-setup-section").style.display = hasKey ? "none" : "block";
+    document.getElementById("keke-chat-section").style.display = hasKey ? "block" : "none";
+    document.getElementById("keke-close-row").style.display = "flex";
+    document.getElementById("keke-status").textContent = "";
+    document.getElementById("keke-response-wrap").style.display = "none";
+    document.getElementById("keke-user-input").value = "";
+    document.getElementById("keke-modal-backdrop").classList.add("show");
+  }
+  document.getElementById("keke-save-key-btn").addEventListener("click", function(){
+    var key = document.getElementById("keke-api-key-input").value.trim();
+    if(!key){ alert("Paste your API key first."); return; }
+    setKekeApiKey(key);
+    document.getElementById("keke-setup-section").style.display = "none";
+    document.getElementById("keke-chat-section").style.display = "block";
+  });
+  document.getElementById("keke-change-key-btn").addEventListener("click", function(){
+    document.getElementById("keke-chat-section").style.display = "none";
+    document.getElementById("keke-setup-section").style.display = "block";
+    document.getElementById("keke-api-key-input").value = getKekeApiKey();
+  });
+  document.getElementById("keke-cancel-btn").addEventListener("click", function(){
+    document.getElementById("keke-modal-backdrop").classList.remove("show");
+  });
+  document.getElementById("keke-close-btn").addEventListener("click", function(){
+    document.getElementById("keke-modal-backdrop").classList.remove("show");
+  });
+  document.getElementById("keke-modal-backdrop").addEventListener("click", function(e){
+    if(e.target === this) this.classList.remove("show");
+  });
+
+  function askKeke(){
+    var apiKey = getKekeApiKey();
+    if(!apiKey) return;
+    var userMsg = document.getElementById("keke-user-input").value.trim();
+    if(!userMsg){ alert("Type what you'd like help with first."); return; }
+    var includeContext = document.getElementById("keke-include-context").checked;
+    var statusEl = document.getElementById("keke-status");
+    var responseWrap = document.getElementById("keke-response-wrap");
+    var responseEl = document.getElementById("keke-response");
+    var sendBtn = document.getElementById("keke-send-btn");
+    responseWrap.style.display = "none";
+    statusEl.textContent = "Keke is thinking…";
+    sendBtn.disabled = true;
+
+    var contextText = "";
+    if(includeContext && activeEditable){
+      contextText = activeEditable.textContent.trim().slice(0, 6000);
+    }
+    var userContent = contextText
+      ? ("Here are my current notes:\n\n" + contextText + "\n\nMy request: " + userMsg)
+      : userMsg;
+
+    fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-5",
+        max_tokens: 1024,
+        system: "You are Keke, a warm, encouraging AI writing assistant helping a Master of Counselling student with their study notes. Be concise, practical, and supportive. Keep responses focused and directly usable, since they may be inserted straight into the student's notes.",
+        messages: [{ role: "user", content: userContent }]
+      })
+    }).then(function(res){
+      return res.json().then(function(body){ return { ok: res.ok, body: body }; });
+    }).then(function(result){
+      sendBtn.disabled = false;
+      if(!result.ok){
+        var errMsg = (result.body && result.body.error && result.body.error.message) || "Request failed.";
+        statusEl.textContent = "⚠ " + errMsg;
+        return;
+      }
+      var text = (result.body.content || []).map(function(block){ return block.text || ""; }).join("\n").trim();
+      statusEl.textContent = "";
+      responseEl.textContent = text || "(Keke didn't return any text.)";
+      responseWrap.style.display = "block";
+    }).catch(function(err){
+      sendBtn.disabled = false;
+      console.error("Keke request failed", err);
+      statusEl.textContent = "⚠ Couldn't reach Claude — check your internet connection and API key.";
+    });
+  }
+  document.getElementById("keke-send-btn").addEventListener("click", askKeke);
+
+  document.getElementById("keke-insert-btn").addEventListener("click", function(){
+    if(!activeEditable){ alert("Click into the Notes area first, then ask Keke again."); return; }
+    var text = document.getElementById("keke-response").textContent;
+    activeEditable.focus();
+    document.execCommand("insertText", false, text);
+    activeEditable.dispatchEvent(new Event("input"));
+    document.getElementById("keke-modal-backdrop").classList.remove("show");
+  });
+  document.getElementById("keke-copy-btn").addEventListener("click", function(){
+    var text = document.getElementById("keke-response").textContent;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){
+        showSaveConfirmToast("📋 Copied Keke's response");
+      }).catch(function(){ prompt("Copy this:", text); });
+    } else {
+      prompt("Copy this:", text);
+    }
+  });
+
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "keke-btn") openKekeModal();
+  });
+
+  // ================= DICTIONARY & THESAURUS =================
+  var lookupCapturedRange = null;
+  function openLookupModal(){
+    lookupCapturedRange = null;
+    var sel = window.getSelection();
+    var selectedText = "";
+    if(sel && sel.rangeCount && !sel.isCollapsed && activeEditable && activeEditable.contains(sel.anchorNode)){
+      lookupCapturedRange = sel.getRangeAt(0).cloneRange();
+      selectedText = sel.toString().trim();
+    }
+    document.getElementById("lookup-word-input").value = (selectedText.split(/\s+/)[0] || "").replace(/[^a-zA-Z'-]/g, "");
+    document.getElementById("lookup-status").textContent = "";
+    document.getElementById("lookup-results").innerHTML = "";
+    document.getElementById("lookup-modal-backdrop").classList.add("show");
+    if(document.getElementById("lookup-word-input").value) runLookup();
+  }
+  function runLookup(){
+    var word = document.getElementById("lookup-word-input").value.trim();
+    if(!word) return;
+    var statusEl = document.getElementById("lookup-status");
+    var resultsEl = document.getElementById("lookup-results");
+    statusEl.textContent = "Looking up \"" + word + "\"…";
+    resultsEl.innerHTML = "";
+    Promise.all([
+      fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(word)).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
+      fetch("https://api.datamuse.com/words?ml=" + encodeURIComponent(word) + "&max=12").then(function(r){ return r.ok ? r.json() : []; }).catch(function(){ return []; })
+    ]).then(function(results){
+      statusEl.textContent = "";
+      renderLookupResults(word, results[0], results[1]);
+    });
+  }
+  function renderLookupResults(word, defData, synData){
+    var resultsEl = document.getElementById("lookup-results");
+    resultsEl.innerHTML = "";
+    if(defData && defData.length){
+      var entry = defData[0];
+      if(entry.phonetic){
+        var phon = document.createElement("div");
+        phon.style.cssText = "font-family: system-ui, sans-serif; font-size:12px; color:var(--ink-soft); margin-bottom:8px;";
+        phon.textContent = entry.phonetic;
+        resultsEl.appendChild(phon);
+      }
+      (entry.meanings || []).slice(0, 4).forEach(function(meaning){
+        var pos = document.createElement("div");
+        pos.className = "lookup-pos";
+        pos.textContent = meaning.partOfSpeech;
+        resultsEl.appendChild(pos);
+        (meaning.definitions || []).slice(0, 2).forEach(function(def){
+          var d = document.createElement("div");
+          d.className = "lookup-def";
+          d.textContent = "• " + def.definition;
+          resultsEl.appendChild(d);
+        });
+      });
+    } else {
+      var noDef = document.createElement("div");
+      noDef.style.cssText = "font-family: system-ui, sans-serif; font-size:12px; color:var(--ink-soft); margin-bottom:6px;";
+      noDef.textContent = "No dictionary definition found for \"" + word + "\".";
+      resultsEl.appendChild(noDef);
+    }
+    var synHeader = document.createElement("div");
+    synHeader.className = "lookup-syn-header";
+    synHeader.textContent = "Similar words — click to replace your selection";
+    resultsEl.appendChild(synHeader);
+    if(synData && synData.length){
+      var chipsWrap = document.createElement("div");
+      chipsWrap.className = "lookup-syn-chips";
+      synData.forEach(function(s){
+        var chip = document.createElement("button");
+        chip.className = "lookup-syn-chip";
+        chip.textContent = s.word;
+        chip.addEventListener("click", function(){ insertSynonym(s.word); });
+        chipsWrap.appendChild(chip);
+      });
+      resultsEl.appendChild(chipsWrap);
+    } else {
+      var noSyn = document.createElement("div");
+      noSyn.style.cssText = "font-family: system-ui, sans-serif; font-size:12px; color:var(--ink-soft);";
+      noSyn.textContent = "No similar words found.";
+      resultsEl.appendChild(noSyn);
+    }
+  }
+  function insertSynonym(word){
+    if(!activeEditable){ alert("Click into a notes area, select the word you want to replace, then try again."); return; }
+    activeEditable.focus();
+    if(lookupCapturedRange){
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(lookupCapturedRange);
+    }
+    document.execCommand("insertText", false, word);
+    activeEditable.dispatchEvent(new Event("input"));
+    document.getElementById("lookup-modal-backdrop").classList.remove("show");
+  }
+  document.getElementById("lookup-search-btn").addEventListener("click", runLookup);
+  document.getElementById("lookup-word-input").addEventListener("keydown", function(e){
+    if(e.key === "Enter"){ e.preventDefault(); runLookup(); }
+  });
+  document.getElementById("lookup-close-btn").addEventListener("click", function(){
+    document.getElementById("lookup-modal-backdrop").classList.remove("show");
+  });
+  document.getElementById("lookup-modal-backdrop").addEventListener("click", function(e){
+    if(e.target === this) this.classList.remove("show");
+  });
+
+  // ================= FORMAT PAINTER =================
+  var formatPainterClipboard = null;
+  function toggleFormatPainter(){
+    if(!activeEditable){ alert("Click into a notes area first."); return; }
+    var btn = document.getElementById("format-painter-btn");
+    var sel = window.getSelection();
+    if(formatPainterClipboard){
+      if(!sel || sel.isCollapsed){ alert("Select the text you want to apply the copied formatting to."); return; }
+      activeEditable.focus();
+      if(formatPainterClipboard.bold && !document.queryCommandState("bold")) document.execCommand("bold");
+      if(formatPainterClipboard.italic && !document.queryCommandState("italic")) document.execCommand("italic");
+      if(formatPainterClipboard.underline && !document.queryCommandState("underline")) document.execCommand("underline");
+      if(formatPainterClipboard.color) document.execCommand("foreColor", false, formatPainterClipboard.color);
+      activeEditable.dispatchEvent(new Event("input"));
+      formatPainterClipboard = null;
+      if(btn){ btn.classList.remove("tracking-active"); btn.title = "Format Painter — select styled text, click here, then select where to apply it"; }
+    } else {
+      if(!sel || sel.isCollapsed){ alert("Select some already-formatted text first, then click Format Painter to copy its style."); return; }
+      formatPainterClipboard = {
+        bold: document.queryCommandState("bold"),
+        italic: document.queryCommandState("italic"),
+        underline: document.queryCommandState("underline"),
+        color: document.queryCommandValue("foreColor")
+      };
+      if(btn){ btn.classList.add("tracking-active"); btn.title = "Now select the text to apply this format to, then click again"; }
+    }
+  }
+
+  // ================= SPECIAL CHARACTERS =================
+  var SPECIAL_CHARS = ["–","—","…","§","©","®","™","±","×","÷","≈","≠","≤","≥","½","¼","¾","°","→","←","↔","•","‘","’","“","”","√","∞","α","β","χ","μ","σ","π","Δ","p"];
+  function renderSpecialCharsGrid(){
+    var grid = document.getElementById("specialchars-grid");
+    grid.innerHTML = "";
+    SPECIAL_CHARS.forEach(function(ch){
+      var btn = document.createElement("button");
+      btn.className = "specialchar-btn";
+      btn.textContent = ch;
+      btn.addEventListener("click", function(){
+        if(!activeEditable){ alert("Click into a notes area first."); return; }
+        activeEditable.focus();
+        document.execCommand("insertText", false, ch);
+        activeEditable.dispatchEvent(new Event("input"));
+      });
+      grid.appendChild(btn);
+    });
+  }
+  document.getElementById("specialchars-close-btn").addEventListener("click", function(){
+    document.getElementById("specialchars-modal-backdrop").classList.remove("show");
+  });
+  document.getElementById("specialchars-modal-backdrop").addEventListener("click", function(e){
+    if(e.target === this) this.classList.remove("show");
+  });
+
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.id === "lookup-btn") openLookupModal();
+    if(e.target && e.target.id === "format-painter-btn") toggleFormatPainter();
+    if(e.target && e.target.id === "specialchars-btn"){
+      renderSpecialCharsGrid();
+      document.getElementById("specialchars-modal-backdrop").classList.add("show");
     }
   });
 
@@ -3190,10 +3815,17 @@
         '<button data-cmd="italic" title="Italic"><i>I</i></button>' +
         '<button data-cmd="underline" title="Underline"><u>U</u></button>' +
         '<button data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>' +
+        '<button data-cmd="superscript" title="Superscript">x²</button>' +
+        '<button data-cmd="subscript" title="Subscript">x₂</button>' +
+        '<button id="format-painter-btn" title="Format Painter — select styled text, click here, then select where to apply it">🖌</button>' +
         '<div class="fmt-divider"></div>' +
         '<button data-cmd="formatBlock" data-val="H2" title="Heading">H</button>' +
         '<button data-cmd="formatBlock" data-val="BLOCKQUOTE" title="Quote">❝</button>' +
         '<button data-cmd="formatBlock" data-val="P" title="Body text">¶</button>' +
+        '<div class="toolbar-dropdown">' +
+          '<button class="toolbar-dropdown-trigger wide" title="Saved paragraph styles">Styles</button>' +
+          '<div class="toolbar-dropdown-panel tools-panel" id="styles-dropdown-panel"></div>' +
+        '</div>' +
         '<div class="fmt-divider"></div>' +
         '<button data-cmd="insertUnorderedList" title="Bullet list">•</button>' +
         '<button data-cmd="insertOrderedList" title="Numbered list">1.</button>' +
@@ -3232,6 +3864,8 @@
         '<button data-cmd="removeFormat" title="Clear formatting">✕</button>' +
         '<div class="fmt-divider"></div>' +
         '<button id="insert-link-btn" title="Insert a link">🔗</button>' +
+        '<button id="keke-btn" title="Ask Keke, your AI writing assistant" style="font-weight:700;">💬 Keke</button>' +
+        '<button id="lookup-btn" title="Dictionary and thesaurus">📖 Look up</button>' +
         '<div class="toolbar-dropdown">' +
           '<button class="toolbar-dropdown-trigger wide" title="More tools">⋯ More</button>' +
           '<div class="toolbar-dropdown-panel tools-panel">' +
@@ -3246,6 +3880,8 @@
             '<button id="focus-mode-btn">🎯 Focus mode</button>' +
             '<button id="read-aloud-btn">🔊 Read aloud</button>' +
             '<button id="dictate-btn">🎤 Dictate</button>' +
+            '<button id="track-changes-btn" title="Track changes">📝 Track changes</button>' +
+            '<button id="specialchars-btn">Ω Special characters</button>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -3291,6 +3927,8 @@
     });
 
     document.getElementById("print-day-btn").addEventListener("click", function(){ printDayCtx(ctx); });
+    trackChangesSnapshots = {};
+    renderStylesDropdown();
 
     document.getElementById("duplicate-day-btn").addEventListener("click", function(){
       var idx = ctx.week.days.indexOf(ctx.day);
@@ -3352,7 +3990,7 @@
         '<div class="split-col" id="source-split-col">' +
           '<div class="card source" style="flex:1; display:flex; flex-direction:column;">' +
             '<h3><span>Source pages</span><input type="text" class="page-range-input" id="source-range-input" placeholder="pp. 6\u201310"><button class="card-collapse-btn" id="source-collapse-btn"><span class="chevron">▾</span>Hide</button></h3>' +
-            '<div class="rich-editable scrollable" id="source-area" contenteditable="true" data-placeholder="Paste the textbook pages you\u2019re working from here…"></div>' +
+            '<div class="rich-editable scrollable" id="source-area" contenteditable="true" spellcheck="true" data-placeholder="Paste the textbook pages you\u2019re working from here…"></div>' +
           '</div>' +
         '</div>' +
         '<div class="split-col">' +
@@ -3360,7 +3998,7 @@
             '<h3><span>Notes</span><span class="word-count" id="notes-wc">0 words</span></h3>' +
             '<div class="notes-body-row">' +
               '<div class="objective-rail" id="objective-tag-chips"></div>' +
-              '<div class="rich-editable scrollable" id="notes-area" contenteditable="true" data-placeholder="What did the reading cover? Key concepts, models, terms…" style="flex:1;"></div>' +
+              '<div class="rich-editable scrollable" id="notes-area" contenteditable="true" spellcheck="true" data-placeholder="What did the reading cover? Key concepts, models, terms…" style="flex:1;"></div>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -3374,7 +4012,7 @@
       '</div>' +
       '<div class="card reflection" id="reflection-card">' +
         '<h3><span>Reflection</span><span class="word-count" id="reflection-wc">0 words</span></h3>' +
-        '<div class="rich-editable" id="reflection-area" contenteditable="true" data-placeholder="How does this land for you? What connects to your own experience, questions it raises…"></div>' +
+        '<div class="rich-editable" id="reflection-area" contenteditable="true" spellcheck="true" data-placeholder="How does this land for you? What connects to your own experience, questions it raises…"></div>' +
       '</div>';
 
     renderReadings(ctx);
@@ -3656,10 +4294,17 @@
         '<button data-cmd="italic" title="Italic"><i>I</i></button>' +
         '<button data-cmd="underline" title="Underline"><u>U</u></button>' +
         '<button data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>' +
+        '<button data-cmd="superscript" title="Superscript">x²</button>' +
+        '<button data-cmd="subscript" title="Subscript">x₂</button>' +
+        '<button id="format-painter-btn" title="Format Painter — select styled text, click here, then select where to apply it">🖌</button>' +
         '<div class="fmt-divider"></div>' +
         '<button data-cmd="formatBlock" data-val="H2" title="Heading">H</button>' +
         '<button data-cmd="formatBlock" data-val="BLOCKQUOTE" title="Quote">❝</button>' +
         '<button data-cmd="formatBlock" data-val="P" title="Body text">¶</button>' +
+        '<div class="toolbar-dropdown">' +
+          '<button class="toolbar-dropdown-trigger wide" title="Saved paragraph styles">Styles</button>' +
+          '<div class="toolbar-dropdown-panel tools-panel" id="styles-dropdown-panel"></div>' +
+        '</div>' +
         '<div class="fmt-divider"></div>' +
         '<button data-cmd="insertUnorderedList" title="Bullet list">•</button>' +
         '<button data-cmd="insertOrderedList" title="Numbered list">1.</button>' +
@@ -3698,6 +4343,8 @@
         '<button data-cmd="removeFormat" title="Clear formatting">✕</button>' +
         '<div class="fmt-divider"></div>' +
         '<button id="insert-link-btn" title="Insert a link">🔗</button>' +
+        '<button id="keke-btn" title="Ask Keke, your AI writing assistant" style="font-weight:700;">💬 Keke</button>' +
+        '<button id="lookup-btn" title="Dictionary and thesaurus">📖 Look up</button>' +
         '<div class="toolbar-dropdown">' +
           '<button class="toolbar-dropdown-trigger wide" title="More tools">⋯ More</button>' +
           '<div class="toolbar-dropdown-panel tools-panel">' +
@@ -3710,6 +4357,8 @@
             '<button id="focus-mode-btn">🎯 Focus mode</button>' +
             '<button id="read-aloud-btn">🔊 Read aloud</button>' +
             '<button id="dictate-btn">🎤 Dictate</button>' +
+            '<button id="track-changes-btn" title="Track changes">📝 Track changes</button>' +
+            '<button id="specialchars-btn">Ω Special characters</button>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -3778,6 +4427,8 @@
     });
 
     document.getElementById("print-chapter-btn").addEventListener("click", function(){ printChapterCtx(ctx); });
+    trackChangesSnapshots = {};
+    renderStylesDropdown();
 
     document.querySelectorAll(".fmt-toolbar button[data-cmd]").forEach(function(btn){
       btn.addEventListener("click", function(){
@@ -3792,13 +4443,13 @@
         '<div class="split-col" id="source-split-col">' +
           '<div class="card source" style="flex:1; display:flex; flex-direction:column;">' +
             '<h3><span>Source pages</span><input type="text" class="page-range-input" id="source-range-input" placeholder="pp. 1\u201320"><button class="card-collapse-btn" id="source-collapse-btn"><span class="chevron">▾</span>Hide</button></h3>' +
-            '<div class="rich-editable scrollable" id="source-area" contenteditable="true" data-placeholder="Paste the chapter pages here…"></div>' +
+            '<div class="rich-editable scrollable" id="source-area" contenteditable="true" spellcheck="true" data-placeholder="Paste the chapter pages here…"></div>' +
           '</div>' +
         '</div>' +
         '<div class="split-col">' +
           '<div class="card" id="notes-card" style="flex:1; display:flex; flex-direction:column;">' +
             '<h3><span>Chapter notes</span><span class="word-count" id="notes-wc">0 words</span></h3>' +
-            '<div class="rich-editable scrollable" id="notes-area" contenteditable="true" data-placeholder="Start writing…"></div>' +
+            '<div class="rich-editable scrollable" id="notes-area" contenteditable="true" spellcheck="true" data-placeholder="Start writing…"></div>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -4049,6 +4700,11 @@
       exportBtn2.addEventListener("click", function(){ exportUnitToDoc(unit); });
       actions.appendChild(exportBtn2);
 
+      var odtBtn = document.createElement("button");
+      odtBtn.textContent = "📄 Export as .odt";
+      odtBtn.addEventListener("click", function(){ exportUnitToODT(unit); });
+      actions.appendChild(odtBtn);
+
       var refsBtn = document.createElement("button");
       refsBtn.textContent = "📑 Reference list";
       refsBtn.addEventListener("click", function(){ openReferenceListModal(unit); });
@@ -4150,6 +4806,143 @@
     a.download = (unit.code || unit.title || "unit").replace(/[^\w.-]+/g, "_") + "-reflections.doc";
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  }
+
+  // ================= REAL .ODT EXPORT (OpenDocument Text — LibreOffice's own format) =================
+  function escXmlText(s){
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+  function odfInlineFromNode(node){
+    var out = "";
+    Array.prototype.forEach.call(node.childNodes, function(child){
+      if(child.nodeType === 3){
+        out += escXmlText(child.textContent);
+      } else if(child.nodeType === 1){
+        var tag = child.tagName.toLowerCase();
+        var inner = odfInlineFromNode(child);
+        if(tag === "b" || tag === "strong") out += '<text:span text:style-name="ODFBold">' + inner + '</text:span>';
+        else if(tag === "i" || tag === "em") out += '<text:span text:style-name="ODFItalic">' + inner + '</text:span>';
+        else if(tag === "u") out += '<text:span text:style-name="ODFUnderline">' + inner + '</text:span>';
+        else if(tag === "s") out += '<text:span text:style-name="ODFStrike">' + inner + '</text:span>';
+        else if(tag === "br") out += '<text:line-break/>';
+        else if(tag === "a") out += '<text:a xlink:href="' + escXmlText(child.getAttribute("href") || "") + '" xlink:type="simple">' + inner + '</text:a>';
+        else out += inner;
+      }
+    });
+    return out;
+  }
+  function odfParagraphsFromHtml(html){
+    var container = document.createElement("div");
+    container.innerHTML = html || "";
+    var xml = "";
+    Array.prototype.forEach.call(container.children, function(el){
+      var tag = el.tagName.toLowerCase();
+      if(tag === "h1" || tag === "h2" || tag === "h3"){
+        xml += '<text:h text:style-name="ODFHeading" text:outline-level="2">' + odfInlineFromNode(el) + '</text:h>';
+      } else if(tag === "blockquote"){
+        xml += '<text:p text:style-name="ODFQuotation">' + odfInlineFromNode(el) + '</text:p>';
+      } else if(tag === "hr"){
+        xml += '<text:p text:style-name="Standard">________________________</text:p>';
+      } else if(tag === "ul" || tag === "ol"){
+        xml += '<text:list text:style-name="' + (tag === "ol" ? "ODFNumbered" : "ODFBulleted") + '">';
+        Array.prototype.forEach.call(el.children, function(li){
+          xml += '<text:list-item><text:p text:style-name="Standard">' + odfInlineFromNode(li) + '</text:p></text:list-item>';
+        });
+        xml += '</text:list>';
+      } else if(tag === "table"){
+        // Simplified: flatten table rows into paragraphs, since full ODF tables need extra column definitions.
+        Array.prototype.forEach.call(el.querySelectorAll("tr"), function(tr){
+          var cells = Array.prototype.map.call(tr.querySelectorAll("td,th"), function(cell){ return odfInlineFromNode(cell); });
+          xml += '<text:p text:style-name="Standard">' + cells.join(" | ") + '</text:p>';
+        });
+      } else if(tag === "img"){
+        xml += '<text:p text:style-name="Standard">[image omitted from export]</text:p>';
+      } else {
+        var inner = odfInlineFromNode(el);
+        xml += '<text:p text:style-name="Standard">' + inner + '</text:p>';
+      }
+    });
+    return xml;
+  }
+  function buildODTContentXml(titleText, sections){
+    var body = '<text:p text:style-name="ODFTitle">' + escXmlText(titleText) + '</text:p>';
+    sections.forEach(function(sec){
+      body += '<text:h text:style-name="ODFHeading" text:outline-level="1">' + escXmlText(sec.heading) + '</text:h>';
+      body += odfParagraphsFromHtml(sec.html);
+    });
+    return '<?xml version="1.0" encoding="UTF-8"?>' +
+      '<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" ' +
+      'xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" ' +
+      'xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" ' +
+      'xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" ' +
+      'xmlns:xlink="http://www.w3.org/1999/xlink" office:version="1.2">' +
+      '<office:automatic-styles>' +
+      '<style:style style:name="ODFBold" style:family="text"><style:text-properties fo:font-weight="bold"/></style:style>' +
+      '<style:style style:name="ODFItalic" style:family="text"><style:text-properties fo:font-style="italic"/></style:style>' +
+      '<style:style style:name="ODFUnderline" style:family="text"><style:text-properties style:text-underline-style="solid"/></style:style>' +
+      '<style:style style:name="ODFStrike" style:family="text"><style:text-properties style:text-line-through-style="solid"/></style:style>' +
+      '<style:style style:name="ODFTitle" style:family="paragraph"><style:text-properties fo:font-size="20pt" fo:font-weight="bold"/></style:style>' +
+      '<style:style style:name="ODFHeading" style:family="paragraph"><style:text-properties fo:font-size="15pt" fo:font-weight="bold"/></style:style>' +
+      '<style:style style:name="ODFQuotation" style:family="paragraph"><style:text-properties fo:font-style="italic"/><style:paragraph-properties fo:margin-left="0.4in"/></style:style>' +
+      '<text:list-style style:name="ODFBulleted"><text:list-level-style-bullet text:level="1" text:bullet-char="•"/></text:list-style>' +
+      '<text:list-style style:name="ODFNumbered"><text:list-level-style-number text:level="1" style:num-format="1"/></text:list-style>' +
+      '</office:automatic-styles>' +
+      '<office:body><office:text>' + body + '</office:text></office:body>' +
+      '</office:document-content>';
+  }
+  var ODT_STYLES_XML = '<?xml version="1.0" encoding="UTF-8"?>' +
+    '<office:document-styles xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" ' +
+    'xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" ' +
+    'xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" office:version="1.2">' +
+    '<office:styles><style:style style:name="Standard" style:family="paragraph"/></office:styles>' +
+    '</office:document-styles>';
+  var ODT_META_XML = '<?xml version="1.0" encoding="UTF-8"?>' +
+    '<office:document-meta xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"><office:meta/></office:document-meta>';
+  var ODT_MANIFEST_XML = '<?xml version="1.0" encoding="UTF-8"?>' +
+    '<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2">' +
+    '<manifest:file-entry manifest:full-path="/" manifest:version="1.2" manifest:media-type="application/vnd.oasis.opendocument.text"/>' +
+    '<manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>' +
+    '<manifest:file-entry manifest:full-path="styles.xml" manifest:media-type="text/xml"/>' +
+    '<manifest:file-entry manifest:full-path="meta.xml" manifest:media-type="text/xml"/>' +
+    '</manifest:manifest>';
+
+  function exportUnitToODT(unit){
+    if(typeof JSZip === "undefined"){
+      alert("Couldn't load the export tool (no internet connection?). Try again once you're back online.");
+      return;
+    }
+    var sections = [];
+    unit.weeks.forEach(function(week){
+      week.days.forEach(function(day){
+        if(!day.notes && !day.reflection) return;
+        var heading = "Week " + week.number + " — " + day.label + (day.topic ? " — " + day.topic : "");
+        var html = "";
+        if(day.notes) html += "<h3>Notes</h3>" + day.notes;
+        if(day.reflection) html += "<h3>Reflection</h3>" + day.reflection;
+        sections.push({ heading: heading, html: html });
+      });
+    });
+    var titleText = unit.code ? (unit.code + " — " + unit.title) : unit.title;
+    var contentXml = buildODTContentXml(titleText, sections);
+
+    var zip = new JSZip();
+    zip.file("mimetype", "application/vnd.oasis.opendocument.text", { compression: "STORE" });
+    zip.folder("META-INF").file("manifest.xml", ODT_MANIFEST_XML);
+    zip.file("content.xml", contentXml);
+    zip.file("styles.xml", ODT_STYLES_XML);
+    zip.file("meta.xml", ODT_META_XML);
+
+    zip.generateAsync({ type: "blob", mimeType: "application/vnd.oasis.opendocument.text" }).then(function(blob){
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = (unit.code || unit.title || "unit").replace(/[^\w.-]+/g, "_") + ".odt";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }).catch(function(err){
+      console.error("ODT export failed", err);
+      alert("Something went wrong building the .odt file. Please try again.");
+    });
   }
 
   // ================= UNIT MODAL =================
