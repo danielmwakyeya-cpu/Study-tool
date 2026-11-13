@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Study Hub</title>
+  <meta name="description" content="A personal Canvas-style study hub for units, modules, assignments, and revision.">
+  <meta name="theme-color" content="#0e2433">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/app.css">
+  <script>
+    try {
+      if (localStorage.getItem("studyhub-v2-theme") === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div id="app"></div>
+  <div id="toaster" role="status" aria-live="polite"></div>
+  <noscript><p class="noscript">Study Hub needs JavaScript. It still keeps your work in this browser, with no server of its own.</p></noscript>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

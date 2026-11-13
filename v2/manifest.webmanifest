@@ -1,0 +1,14 @@
+{
+  "name": "Study Hub",
+  "short_name": "Study Hub",
+  "description": "A personal study hub for ECU counselling units.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0e2433",
+  "theme_color": "#0e2433",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

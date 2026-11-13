@@ -1,0 +1,94 @@
+{
+  "units": [
+    {
+      "id": "unit-cou6503",
+      "code": "COU6503",
+      "title": "Counselling Practice",
+      "color": "#5B7A99",
+      "startDate": "2026-03-02",
+      "weeks": [
+        { "number": 1, "days": [] },
+        { "number": 2 },
+        {
+          "number": 3,
+          "days": [
+            {
+              "id": "day-w3",
+              "label": "Day 2",
+              "topic": "Social system barriers",
+              "readings": [
+                { "id": "r1", "text": "Paradies, Y. (2006). A systematic review of empirical research on self-reported racism and health.", "done": true, "chapterId": "ch1" }
+              ],
+              "sourceText": "<p>Source page kept from version 1.</p>",
+              "sourceRange": "pp. 4–9",
+              "notes": "<p>Notes <b>kept</b> from the planner.</p>",
+              "reflection": "<p>Reflection kept apart from notes.</p>",
+              "objectives": [{ "id": "o1", "text": "Name a social system barrier", "color": "#F5D98B" }],
+              "qa": [{ "id": "q1", "question": "What is a barrier?", "answer": "A system, not only a person." }],
+              "slideshows": [{ "id": "deck1", "name": "Week 3 slides", "slides": [{ "id": "s1", "title": "Barriers", "body": "Racism sits in systems." }] }],
+              "hotspotActivities": [
+                {
+                  "id": "hot1",
+                  "name": "Map the barrier",
+                  "imageDataUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+                  "hotspots": [{ "id": "hs1", "xPercent": 12, "yPercent": 40, "label": "Policy", "info": "Look here" }]
+                }
+              ],
+              "footnotes": [{ "id": "f1", "text": "See Paradies 2006." }],
+              "comments": [{ "id": "c1", "text": "Revisit before the essay." }],
+              "assessment": "A1 Photoyarn",
+              "flagged": true,
+              "done": false,
+              "customNote": "do not drop me",
+              "updated": 1700000000000
+            }
+          ]
+        },
+        {
+          "number": 8,
+          "days": [
+            {
+              "id": "day-journal",
+              "label": "Journal",
+              "topic": "Weekly reflection",
+              "readings": [],
+              "notes": "",
+              "reflection": "<p>A later week, past the old six-week limit.</p>",
+              "done": true,
+              "updated": 1700001000000
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "books": [
+    {
+      "id": "book1",
+      "title": "Groups: Process and Practice",
+      "author": "Corey, Corey & Corey",
+      "fullReference": "Corey, M. S., Corey, G., & Corey, C. (2017). Groups: Process and practice (10th ed.). Cengage.",
+      "inTextCitation": "(Corey et al., 2017)",
+      "color": "#B5592E",
+      "chapters": [
+        {
+          "id": "ch1",
+          "title": "Ch. 1 — Introduction",
+          "tags": ["foundations"],
+          "sourceText": "<p>Chapter source kept.</p>",
+          "sourceRange": "pp. 1–20",
+          "notes": "<p>Chapter notes kept.</p>",
+          "qa": [{ "id": "cq1", "question": "Why groups?", "answer": "People change in relation." }],
+          "footnotes": [],
+          "comments": [],
+          "assessment": "A1 Photoyarn",
+          "flagged": false,
+          "updated": 1700000000000
+        }
+      ]
+    }
+  ],
+  "quickCaptures": [
+    { "id": "cap1", "text": "Remember the Perth deadline.", "created": 1700002000000 }
+  ]
+}
