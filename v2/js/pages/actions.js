@@ -17,7 +17,7 @@ import {
   updateSettings
 } from "../store.js";
 import { signInGoogle, signOutGoogle } from "../sync.js";
-import { choiceModal, confirmModal, formModal, sanitizeHtml, toast } from "../ui.js";
+import { actionSheet, choiceModal, confirmModal, formModal, sanitizeHtml, toast } from "../ui.js";
 import { go } from "../router.js";
 import { COURSE_COLOURS, ITEM_TYPES, courseHref, downloadText, esc, hashString, numOrNull, stripHtml, uid } from "../util.js";
 import { byPosition, modulesFor, itemsForModule } from "../queries.js";
@@ -103,6 +103,7 @@ async function handleAction(action, button) {
     if (action === "delete-item") return deleteItem(button.dataset.id);
     if (action === "toggle-done") return toggleDone(button.dataset.id);
     if (action === "move") return moveRecord(button.dataset.kind, button.dataset.id, Number(button.dataset.dir));
+    if (action === "more") return openMore(button);
     if (action === "renumber") return renumber(button.dataset.course);
     if (action === "add-assignment") return addAssignment(button.dataset.course);
     if (action === "delete-assignment") return deleteAssignment(button.dataset.id);
@@ -315,6 +316,91 @@ async function toggleDone(id) {
   if (!item) return;
   const done = !item.done;
   await saveRecord("items", { ...item, done, doneAt: done ? Date.now() : null });
+}
+
+function siblingsOf(kind, rec) {
+  return list(kind)
+    .filter((row) => kind === "modules" ? row.courseId === rec.courseId : row.moduleId === rec.moduleId)
+    .sort(byPosition);
+}
+
+async function openMore(button) {
+  const kind = button.dataset.kind;
+  const id = button.dataset.id;
+  const rec = getRecord(kind, id);
+  if (!rec || (kind !== "items" && kind !== "modules")) return;
+  const siblings = siblingsOf(kind, rec);
+  const index = siblings.findIndex((row) => row.id === id);
+  const title = kind === "items" ? `${rec.numberLabel || ""} ${rec.title || "Item"}`.trim() : (rec.title || "Module");
+  const actions = [
+    { value: "edit", label: "Edit" },
+    { value: "up", label: "Move up", disabled: index <= 0 },
+    { value: "down", label: "Move down", disabled: index === -1 || index >= siblings.length - 1 }
+  ];
+  if (kind === "items") actions.push({ value: "move-module", label: "Move to another module" });
+  actions.push({ value: "delete", label: "Delete", danger: true });
+  const choice = await actionSheet({ title, actions });
+  if (choice === "edit") return kind === "modules" ? editModule(id) : go(courseHref(rec.courseId, "item", id));
+  if (choice === "up") return moveRecord(kind, id, -1);
+  if (choice === "down") return moveRecord(kind, id, 1);
+  if (choice === "move-module") return moveItemToModule(id);
+  if (choice === "delete") return kind === "modules" ? deleteModule(id) : deleteItem(id);
+}
+
+async function editModule(id) {
+  const mod = getRecord("modules", id);
+  if (!mod) return;
+  const data = await formModal({
+    title: "Edit module",
+    fields: [
+      { name: "number", label: "Module number", value: String(mod.number ?? "") },
+      { name: "title", label: "Title", value: mod.title || "", required: true }
+    ]
+  });
+  if (!data?.title) return;
+  const number = Number(data.number);
+  await saveRecord("modules", { id, title: data.title.trim(), number: Number.isFinite(number) ? number : mod.number });
+  await reindexModule(id);
+  emit();
+}
+
+async function moveItemToModule(itemId) {
+  const item = getRecord("items", itemId);
+  if (!item) return;
+  const choices = modulesFor(item.courseId).filter((mod) => mod.id !== item.moduleId);
+  if (!choices.length) {
+    toast("Add another module before moving this item.");
+    return;
+  }
+  const fromId = item.moduleId;
+  const data = await formModal({
+    title: "Move to another module",
+    fields: [{
+      name: "moduleId",
+      label: "Module",
+      type: "select",
+      value: choices[0].id,
+      options: choices.map((mod) => ({ value: mod.id, label: `${mod.number}. ${mod.title}` }))
+    }]
+  });
+  if (!data?.moduleId) return;
+  const dest = itemsForModule(data.moduleId);
+  await saveRecord("items", { id: item.id, moduleId: data.moduleId, position: dest.length });
+  await reindexModule(fromId);
+  await reindexModule(data.moduleId);
+  emit();
+  toast("Moved to the other module.");
+}
+
+async function reindexModule(moduleId) {
+  const mod = getRecord("modules", moduleId);
+  if (!mod) return;
+  const items = itemsForModule(moduleId);
+  for (let i = 0; i < items.length; i += 1) {
+    const label = `${mod.number}.${i + 1}`;
+    if (items[i].position === i && items[i].numberLabel === label) continue;
+    await saveRecord("items", { id: items[i].id, position: i, numberLabel: label }, { silent: true });
+  }
 }
 
 async function moveRecord(kind, id, dir) {

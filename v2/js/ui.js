@@ -104,6 +104,38 @@ export function confirmModal({ title, body, confirmLabel = "Confirm", cancelLabe
   });
 }
 
+export function actionSheet({ title, actions }) {
+  return new Promise((resolve) => {
+    const dialog = document.createElement("dialog");
+    dialog.className = "sheet";
+    dialog.innerHTML = `<form method="dialog">
+      <div class="sheet-grab" aria-hidden="true"></div>
+      <h2>${esc(title)}</h2>
+      <div class="sheet-actions">
+        ${actions.map((action) => `<button type="button" class="sheet-btn ${action.danger ? "danger" : ""}" data-value="${esc(action.value)}" ${action.disabled ? "disabled" : ""}>${esc(action.label)}</button>`).join("")}
+      </div>
+      <button type="button" class="sheet-btn cancel" data-cancel>Cancel</button>
+    </form>`;
+    document.body.appendChild(dialog);
+    const finish = settleModal(dialog, resolve);
+    dialog.querySelectorAll("[data-value]").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (button.disabled) return;
+        finish(button.getAttribute("data-value"));
+      });
+    });
+    dialog.querySelector("[data-cancel]").addEventListener("click", () => finish(null));
+    dialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      finish(null);
+    });
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) finish(null);
+    });
+    dialog.showModal();
+  });
+}
+
 export function choiceModal({ title, body, choices }) {
   return new Promise((resolve) => {
     const dialog = document.createElement("dialog");
