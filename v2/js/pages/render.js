@@ -171,17 +171,19 @@ function modulesPage(route) {
       return `<section class="module" id="module-${esc(mod.id)}">
         <header><div><p class="kicker">Module ${esc(mod.number)}</p><h3>${esc(mod.title)}</h3></div>${progressHtml(progress.done, progress.total)}
           <div class="row-actions">
-            <button class="icon-btn" type="button" data-action="move" data-kind="modules" data-id="${esc(mod.id)}" data-dir="-1" aria-label="Move module up">${icons.up}</button>
-            <button class="icon-btn" type="button" data-action="move" data-kind="modules" data-id="${esc(mod.id)}" data-dir="1" aria-label="Move module down">${icons.down}</button>
+            <button class="icon-btn desktop-only" type="button" data-action="move" data-kind="modules" data-id="${esc(mod.id)}" data-dir="-1" aria-label="Move module up">${icons.up}</button>
+            <button class="icon-btn desktop-only" type="button" data-action="move" data-kind="modules" data-id="${esc(mod.id)}" data-dir="1" aria-label="Move module down">${icons.down}</button>
             <button class="btn small" type="button" data-action="add-item" data-module="${esc(mod.id)}">Add item</button>
-            <button class="icon-btn" type="button" data-action="delete-module" data-id="${esc(mod.id)}" aria-label="Delete module">${icons.trash}</button>
+            <button class="icon-btn desktop-only" type="button" data-action="delete-module" data-id="${esc(mod.id)}" aria-label="Delete module">${icons.trash}</button>
+            <button class="more-btn" type="button" data-action="more" data-kind="modules" data-id="${esc(mod.id)}" aria-label="Actions for ${esc(mod.title)}"><span aria-hidden="true">⋯</span></button>
           </div>
         </header>
         ${items.length ? `<ol class="module-items">${items.map((item) => `<li class="${focus === item.id ? "focus" : ""}">
             <button class="tick ${item.done ? "on" : ""}" type="button" data-action="toggle-done" data-id="${esc(item.id)}" aria-pressed="${item.done ? "true" : "false"}" aria-label="${item.done ? "Mark not done" : "Mark as done"}">${item.done ? icons.check : ""}</button>
             <a href="${courseHref(course.id, "item", item.id)}"><span class="type-icon">${typeIcon(item.type)}</span><span class="num">${esc(item.numberLabel)}</span><span class="item-title">${esc(item.title)}</span><span class="pill">${esc(typeLabel(item.type))}</span></a>
-            <button class="icon-btn" type="button" data-action="move" data-kind="items" data-id="${esc(item.id)}" data-dir="-1" aria-label="Move up">${icons.up}</button>
-            <button class="icon-btn" type="button" data-action="move" data-kind="items" data-id="${esc(item.id)}" data-dir="1" aria-label="Move down">${icons.down}</button>
+            <button class="icon-btn desktop-only" type="button" data-action="move" data-kind="items" data-id="${esc(item.id)}" data-dir="-1" aria-label="Move up">${icons.up}</button>
+            <button class="icon-btn desktop-only" type="button" data-action="move" data-kind="items" data-id="${esc(item.id)}" data-dir="1" aria-label="Move down">${icons.down}</button>
+            <button class="more-btn" type="button" data-action="more" data-kind="items" data-id="${esc(item.id)}" aria-label="Actions for ${esc(item.title)}"><span aria-hidden="true">⋯</span></button>
           </li>`).join("")}</ol>` : `<p class="muted pad">No items in this module yet.</p>`}
       </section>`;
     }).join("") || `<section class="empty"><h2>No modules yet</h2><p>Add the first week or topic. Modules are not limited to six.</p></section>`}`;
@@ -349,7 +351,7 @@ function assignmentsPage(route) {
     <div class="page-head"><div><p class="kicker">Assignments</p><h2>${esc(course.code)}</h2></div><button class="btn primary" type="button" data-action="add-assignment" data-course="${esc(course.id)}">Add assignment</button></div>
     ${rows.length ? `<div class="table-wrap"><table class="grid"><thead><tr><th>Assignment</th><th>Due</th><th>Weight</th><th>Status</th><th>Turnitin</th><th>Mark</th></tr></thead><tbody>${rows.map((row) => {
       const when = row.dueAt ? formatDual(row.dueAt, row.timezone || "Australia/Perth") : null;
-      return `<tr><td><a href="${courseHref(course.id, "assignment", row.id)}">${esc(row.title)}</a></td><td>${when ? `${esc(when.deadline)}<br><small>Adelaide ${esc(when.home)}</small>` : "—"}</td><td>${row.weighting ?? "—"}%</td><td><span class="pill status-${esc(row.status)}">${esc(statusLabel(row.status))}</span></td><td>${row.turnitin ?? "—"}%</td><td>${row.mark == null ? "—" : `${esc(row.mark)} / ${esc(row.markOutOf ?? "")}`}</td></tr>`;
+      return `<tr><td data-label="Assignment"><a href="${courseHref(course.id, "assignment", row.id)}">${esc(row.title)}</a></td><td data-label="Due">${when ? `${esc(when.deadline)}<br><small>Adelaide ${esc(when.home)}</small>` : "—"}</td><td data-label="Weight">${row.weighting ?? "—"}%</td><td data-label="Status"><span class="pill status-${esc(row.status)}">${esc(statusLabel(row.status))}</span></td><td data-label="Turnitin">${row.turnitin ?? "—"}%</td><td data-label="Mark">${row.mark == null ? "—" : `${esc(row.mark)} / ${esc(row.markOutOf ?? "")}`}</td></tr>`;
     }).join("")}</tbody></table></div>` : `<section class="empty"><h2>No assignments yet</h2><p>Add the assessment name, the Perth deadline, and the weighting from the unit outline.</p></section>`}`;
   return shell(route, { title: "Assignments", main, course, section: "assignments" });
 }
@@ -464,7 +466,7 @@ function gradesPage(route) {
     <section class="grade-hero"><p class="kicker">Running grade</p><strong>${grade.soFar == null ? "—" : `${grade.soFar.toFixed(1)}%`}</strong><p>${grade.soFar == null ? "No marked work yet. Enter a mark on an assignment and set its status to Graded." : `Across the ${grade.weightCounted}% of the unit that has a mark. That is ${grade.earned.toFixed(1)} points toward 100.`}</p><p class="muted">Weight entered so far: ${grade.totalWeight}%.</p></section>
     <div class="table-wrap"><table class="grid"><thead><tr><th>Assignment</th><th>Weight</th><th>Mark</th><th>Contribution</th></tr></thead><tbody>${rows.map((row) => {
       const contribution = row.status === "graded" && Number(row.markOutOf) > 0 && Number(row.weighting) > 0 ? ((Number(row.mark) / Number(row.markOutOf)) * Number(row.weighting)) : null;
-      return `<tr><td><a href="${courseHref(course.id, "assignment", row.id)}">${esc(row.title)}</a></td><td>${row.weighting ?? "—"}%</td><td>${row.mark == null ? "—" : `${esc(row.mark)} / ${esc(row.markOutOf)}`}</td><td>${contribution == null ? "—" : contribution.toFixed(1)}</td></tr>`;
+      return `<tr><td data-label="Assignment"><a href="${courseHref(course.id, "assignment", row.id)}">${esc(row.title)}</a></td><td data-label="Weight">${row.weighting ?? "—"}%</td><td data-label="Mark">${row.mark == null ? "—" : `${esc(row.mark)} / ${esc(row.markOutOf)}`}</td><td data-label="Contribution">${contribution == null ? "—" : contribution.toFixed(1)}</td></tr>`;
     }).join("")}</tbody></table></div>`;
   return shell(route, { title: "Grades", main, course, section: "grades" });
 }
